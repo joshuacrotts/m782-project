@@ -11,3 +11,6 @@ data Term : Set where
     pred : Term → Term
     zero? : Term → Term
     if : Term → Term → Term → Term
+    cons : Term → Term → Term
+    fst : Term → Term
+    snd : Term → Term

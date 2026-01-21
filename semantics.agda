@@ -4,6 +4,7 @@ module Semantics where
 -- Small-step semantics
 ------------------------------------------------------------------------
 
+open import Types
 open import Terms
 open import Values
 
@@ -41,7 +42,15 @@ data _↦_ : Term → Term → Set where
     --      pred(suc(v)) ↦ v
     ss-pred-suc : ∀ {v} → NatVal v → pred(suc(v)) ↦ v
 
+    --   v1 val    v2 val
+    -- -----------------------
+    --  fst(cons(v1, v2)) ↦ v1
+    ss-fst : ∀ {v1 v2} → Val v1 → Val v2 → fst(cons v1 v2) ↦ v1
 
+    --   v1 val    v2 val
+    -- -----------------------
+    --  snd(cons(v1, v2)) ↦ v2
+    ss-snd : ∀ {v1 v2} → Val v1 → Val v2 → snd(cons v1 v2) ↦ v2
 
 
     ---------- Congruence rules ----------
@@ -65,5 +74,25 @@ data _↦_ : Term → Term → Set where
     -- -------------------------------
     --    pred(e) ↦ pred(e')
     ss-pred-step : ∀ {e e'} → (e ↦ e') → (pred e ↦ pred e')
-    
+
+    --   e₁ ↦ e₁'       e₂ ↦ e₂'
+    -- -----------------------------
+    --   cons e₁ e₂ ↦ cons e₁' e₂
+    ss-cons-left-step : ∀ {e₁ e₁' e₂ e₂'} → (e₁ ↦ e₁') → (e₂ ↦ e₂') → (cons e₁ e₂ ↦ cons e₁' e₂)
+
+    --   v val            e₂ ↦ e₂'
+    -- -----------------------------
+    --   cons e₁ e₂ ↦ cons e₁' e₂
+    ss-cons-right-step : ∀ {v e₂ e₂'} → (Val v) → (e₂ ↦ e₂') → (cons v e₂ ↦ cons v e₂')
+
+    --          e ↦ e'
+    -- -------------------------
+    --       fst e ↦ fst e1'
+    ss-fst-step : ∀ {e e'} → (e ↦ e') → (fst e ↦ fst e')
+
+
+    --          e ↦ e'
+    -- -------------------------
+    --       snd e ↦ snd e'
+    ss-snd-step : ∀ {e e'} → (e ↦ e') → (snd e ↦ snd e')
 

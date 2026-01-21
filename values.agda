@@ -26,6 +26,12 @@ data Val : Term → Set where
     --      false val
     v-false : Val false
 
+    --  v1 val     v2 val
+    -- ---------------------
+    --    cons (v1, v2) val
+    v-cons : ∀ {v1 v2} → Val v1 → Val v2 → Val (cons v1 v2)
+
+
     --      v nval
     -- ---------------------
     --      v val

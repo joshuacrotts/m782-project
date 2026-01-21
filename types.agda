@@ -6,4 +6,5 @@ module Types where
 data τ : Set where
     ℕ : τ
     𝔹 : τ
+    _×_ : τ → τ → τ
 
