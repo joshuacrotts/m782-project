@@ -1,6 +1,6 @@
 # M782 Project: Progress and Preservation Proofs of System F
 
-System F is the polymorphic simply-typed lambda calculus. Polymorphic, here, means that we are allowed to write lambda expressions over any type, e.g., $\Lambda\, A.\lambda\, x.x$ is the identity function over any type $A$.
+System F is the polymorphic simply-typed lambda calculus. Polymorphic, here, means that we are allowed to write lambda expressions over any type, e.g., $\Lambda A.\lambda x.x$ is the identity function over any type $A$.
 
 In this project, we will prove the type-soundness theorem of System F using two lemmas: progress and preservation.
 
