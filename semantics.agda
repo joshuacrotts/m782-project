@@ -17,10 +17,10 @@ data _↦_ : Term → Term → Set where
     --       zero?(zero) ↦ true
     ss-zero? : zero?(zero) ↦ true
 
-    --           v NatVal
+    --           v Valτ ℕ
     -- -------------------------------
     --      zero?(suc(v)) ↦ false
-    ss-zero?-suc : ∀ {v} → NatVal v → zero?(suc(v)) ↦ false
+    ss-zero?-suc : ∀ {v} → Valτ ℕ v → zero?(suc(v)) ↦ false
 
     -- 
     -- -------------------------------
@@ -37,20 +37,21 @@ data _↦_ : Term → Term → Set where
     --     pred(zero) ↦ zero
     ss-pred-zero : pred(zero) ↦ zero
 
-    --           v NatVal
+    --           v Valτ ℕ
     -- -------------------------------
     --      pred(suc(v)) ↦ v
-    ss-pred-suc : ∀ {v} → NatVal v → pred(suc(v)) ↦ v
+    ss-pred-suc : ∀ {v} → Valτ ℕ v → pred(suc(v)) ↦ v
 
-    --   v1 val    v2 val
-    -- -----------------------
-    --  fst(cons(v1, v2)) ↦ v1
-    ss-fst : ∀ {v1 v2} → Val v1 → Val v2 → fst(cons v1 v2) ↦ v1
 
-    --   v1 val    v2 val
-    -- -----------------------
-    --  snd(cons(v1, v2)) ↦ v2
-    ss-snd : ∀ {v1 v2} → Val v1 → Val v2 → snd(cons v1 v2) ↦ v2
+    --   v1 Valτ τ1    v2 Valτ τ2
+    -- -----------------------------
+    --  fst (cons v1 v2) ↦ v1
+    ss-fst : ∀ {τ1 τ2 v1 v2} → Valτ τ1 v1 → Valτ τ2 v2 → fst (cons v1 v2) ↦ v1
+
+    --   v1 Valτ τ1    v2 Valτ τ2
+    -- -----------------------------
+    --  snd (cons v1 v2) ↦ v2
+    ss-snd : ∀ {τ1 τ2 v1 v2} → Valτ τ1 v1 → Valτ τ2 v2 → snd (cons v1 v2) ↦ v2
 
 
     ---------- Congruence rules ----------
@@ -75,24 +76,23 @@ data _↦_ : Term → Term → Set where
     --    pred(e) ↦ pred(e')
     ss-pred-step : ∀ {e e'} → (e ↦ e') → (pred e ↦ pred e')
 
-    --   e₁ ↦ e₁'       e₂ ↦ e₂'
+    --   e₁ ↦ e₁' 
     -- -----------------------------
     --   cons e₁ e₂ ↦ cons e₁' e₂
-    ss-cons-left-step : ∀ {e₁ e₁' e₂ e₂'} → (e₁ ↦ e₁') → (e₂ ↦ e₂') → (cons e₁ e₂ ↦ cons e₁' e₂)
+    ss-cons-left-step : ∀ {e₁ e₁' e₂} → (e₁ ↦ e₁') → (cons e₁ e₂ ↦ cons e₁' e₂)
+
 
     --   v val            e₂ ↦ e₂'
     -- -----------------------------
     --   cons e₁ e₂ ↦ cons e₁' e₂
-    ss-cons-right-step : ∀ {v e₂ e₂'} → (Val v) → (e₂ ↦ e₂') → (cons v e₂ ↦ cons v e₂')
+    ss-cons-right-step :   ∀ {τ v e₂ e₂'} → Valτ τ v → (e₂ ↦ e₂') → cons v e₂ ↦ cons v e₂'
 
-    --          e ↦ e'
-    -- -------------------------
-    --       fst e ↦ fst e1'
+    --   e ↦ e'
+    -- ----------------------------
+    --     fst e ↦ fst e'
     ss-fst-step : ∀ {e e'} → (e ↦ e') → (fst e ↦ fst e')
 
-
-    --          e ↦ e'
-    -- -------------------------
-    --       snd e ↦ snd e'
+    --  e ↦ e'
+    -- ---------------------
+    --     snd e ↦ snd e'
     ss-snd-step : ∀ {e e'} → (e ↦ e') → (snd e ↦ snd e')
-

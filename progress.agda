@@ -12,51 +12,60 @@ open import Data.Product using (Σ; Σ-syntax; _,_)
 open import Data.Empty using (⊥; ⊥-elim)
 
 
--- If we give it a NatVal and a proof that it has type 𝔹, we can derive a contradiction.
-noNatIsBool : ∀ {e} → NatVal e → ⊢ e ∶ 𝔹 → ⊥
-noNatIsBool nv-zero      ()
-noNatIsBool (nv-suc nv)  ()
-
 -- Progress theorem
 -- If e : τ then either e Val or e steps to e'.
 progress : ∀ {e τ} → 
          (⊢ e ∶ τ) → 
-         (Val e ⊎ Σ[ e' ∈ Term ] (e ↦ e'))
+         (Valτ τ e ⊎ Σ[ e' ∈ Term ] (e ↦ e'))
 
 -- Proof by induction on typing derivation
 -- true case
-progress τ-true  = inj₁ v-true
+progress τ-true  = inj₁ (vτ-true)
 
 -- false case
-progress τ-false = inj₁ v-false
+progress τ-false = inj₁ (vτ-false)
 
 -- zero case
-progress τ-zero  = inj₁ (v-val nv-zero)
+progress τ-zero  = inj₁ (vτ-zero)
 
--- suc case
+-- suc case (typed values)
 progress (τ-suc τ₁) with progress τ₁
-... | inj₁ (v-val v)  = inj₁ (v-val (nv-suc v))
-... | inj₂ (e , step) = inj₂ (suc e , ss-suc-step step)
+... | inj₁ v            = inj₁ (vτ-suc v)
+... | inj₂ (e' , st)    = inj₂ (suc e' , ss-suc-step st)
+
 
 -- pred case
 progress (τ-pred τ₁) with progress τ₁
-... | inj₁ (v-val nv-zero)          = inj₂ (zero , ss-pred-zero)
-... | inj₁ (v-val (nv-suc {v} nv))  = inj₂ (v , ss-pred-suc nv)
-... | inj₂ (e , step)               = inj₂ (pred e , ss-pred-step step)
+... | inj₁ vτ-zero              = inj₂ (zero , ss-pred-zero)         -- pred(zero) steps to zero
+... | inj₁ (vτ-suc {v = v₁} v)  = inj₂ (v₁ , ss-pred-suc v)          -- pred(suc(v)) steps to v
+... | inj₂ (e' , step)          = inj₂ (pred e' , ss-pred-step step) -- if e steps, pred e steps.
+
 
 -- zero? case
 progress (τ-zero? τ₁) with progress τ₁
-... | inj₁ (v-val nv-zero)          = inj₂ (true , ss-zero?)
-... | inj₁ (v-val (nv-suc {v} nv))  = inj₂ (false , ss-zero?-suc nv)
-... | inj₂ (e , step)               = inj₂ (zero? e , ss-zero?-step step)
+... | inj₁ vτ-zero            = inj₂ (true , ss-zero?) -- zero?(zero) steps to true
+... | inj₁ (vτ-suc {v = v₁} v)  = inj₂ (false , ss-zero?-suc v) -- zero?(suc(v)) steps to false
+... | inj₂ (e' , step)          = inj₂ (zero? e' , ss-zero?-step step) -- zero?(e) steps to zero?(e')
 
 -- if case
 progress (τ-if {e1 = e1} {e2 = e2} {e3 = e3} τ₁ τ₂ τ₃) with progress τ₁
-... | inj₁ v-true       = inj₂ (e2 , ss-if-true)
-... | inj₁ v-false      = inj₂ (e3 , ss-if-false)
-... | inj₂ (e1' , step) = inj₂ (if e1' e2 e3 , ss-if-step step)
-... | inj₁ (v-val x)    = ⊥-elim (noNatIsBool x τ₁)
+... | inj₁ vτ-true          = inj₂ (e2 , ss-if-true)
+... | inj₁ vτ-false         = inj₂ (e3 , ss-if-false) 
+... | inj₂ (e1' , step)     = inj₂ (if e1' e2 e3 , ss-if-step step)
 
+-- cons case
+progress (τ-cons {e1 = e1} {e2 = e2} τ₁ τ₂) with progress τ₁
+... | inj₂ (e1' , step1)        = inj₂ (cons e1' e2 , ss-cons-left-step step1) -- if e1 steps, the pair steps.
+... | inj₁ v1 with progress τ₂                           -- if e1 is a value, check e2.
+...     | inj₁ v2               = inj₁ (vτ-cons v1 v2)   -- if both are values then the pair is a value.
+...     | inj₂ (e2' , step2)    = inj₂ (cons e1 e2' , ss-cons-right-step v1 step2)               -- if e2 steps, the pair steps.
 
+-- fst case
+progress (τ-fst {e = e} {τ1 = τ1} {τ2 = τ2} τ₁ₓ₂) with progress τ₁ₓ₂  -- induct on the typing of e
+... | inj₁ (vτ-cons {v1 = v1t} {v2 = v2t} v1 v2)    = inj₂ (v1t , ss-fst v1 v2) -- if e is a value cons(v1, v2), then fst(cons(v1, v2)) steps to v1
+... | inj₂ (e' , step)                              = inj₂ (fst e' , ss-fst-step step)
 
-
+-- snd case
+progress (τ-snd {e = e} {τ1 = τ1} {τ2 = τ2} τ₁ₓ₂) with progress τ₁ₓ₂  -- induct on the typing of e
+... | inj₁ (vτ-cons {v1 = v1t} {v2 = v2t} v1 v2)    = inj₂ (v2t , ss-snd v1 v2) -- if e is a value cons(v1, v2), then snd(cons(v1, v2)) steps to v2
+... | inj₂ (e' , step)                              = inj₂ (snd e' , ss-snd-step step)

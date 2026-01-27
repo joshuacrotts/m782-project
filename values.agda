@@ -1,39 +1,17 @@
 module Values where
 
 open import Terms
+open import Types
 
-data NatVal : Term → Set where
-    --
-    -- ---------------------
-    --      zero nval
-    nv-zero : NatVal zero
+{- Values are terms that cannot step further.
+ - Here we define the value judgments as being inductive types that receive a type, a term, and
+ - produce a type. 
+ - For example, vτ-true is a proof that true is a value of type 𝔹. -}
+data Valτ : τ → Term → Set where
+  vτ-true  : Valτ 𝔹 true
+  vτ-false : Valτ 𝔹 false
 
-    --       v nval
-    -- ---------------------
-    --     suc v nval
-    nv-suc : ∀ {v} → NatVal v → NatVal (suc v)
+  vτ-zero  : Valτ ℕ zero
+  vτ-suc   : ∀ {v} → Valτ ℕ v → Valτ ℕ (suc v)
 
-
-data Val : Term → Set where
-
-    --
-    -- ---------------------
-    --      true val
-    v-true : Val true
-
-    --
-    -- ---------------------
-    --      false val
-    v-false : Val false
-
-    --  v1 val     v2 val
-    -- ---------------------
-    --    cons (v1, v2) val
-    v-cons : ∀ {v1 v2} → Val v1 → Val v2 → Val (cons v1 v2)
-
-
-    --      v nval
-    -- ---------------------
-    --      v val
-    v-val : ∀ {v} → NatVal v → Val v
-
+  vτ-cons  : ∀ {τ1 τ2 v1 v2} → Valτ τ1 v1 → Valτ τ2 v2 → Valτ (τ1 × τ2) (cons v1 v2)

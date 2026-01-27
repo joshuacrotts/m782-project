@@ -31,3 +31,17 @@ preservation (τ-pred τ₁) (ss-pred-step step)                                
 
 preservation (τ-suc τ₁) (ss-suc-step step)                                      = τ-suc (preservation τ₁ step)
 preservation (τ-zero? τ₁) (ss-zero?-step step)                                  = τ-zero? (preservation τ₁ step)
+
+preservation (τ-cons τ₁ τ₂) (ss-cons-left-step step1)  =    -- if e1 steps, the pair steps.
+  τ-cons (preservation τ₁ step1) τ₂
+
+preservation (τ-cons τ₁ τ₂) (ss-cons-right-step v1 step2) =   -- if e2 steps, the pair steps.
+  τ-cons τ₁ (preservation τ₂ step2)
+
+preservation (τ-fst (τ-cons τ₁ τ₂)) (ss-fst v1 v2)     = τ₁     -- fst (cons v1 v2) steps to v1
+preservation (τ-fst τ₁×₂)           (ss-fst-step step) =    -- fst e steps to fst e'
+  τ-fst (preservation τ₁×₂ step)
+
+preservation (τ-snd (τ-cons τ₁ τ₂)) (ss-snd v1 v2)     = τ₂     -- snd (cons v1 v2) steps to v2
+preservation (τ-snd τ₁×₂)           (ss-snd-step step) =    -- snd e steps to snd e'
+  τ-snd (preservation τ₁×₂ step)
