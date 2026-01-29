@@ -18,10 +18,13 @@ We will prove type-soundness in a piecemeal fashion: proving it for the entirety
 ### Week 2: Pairs
 
 
-### Week 3: Sum Types
+### Weeks 3-4: de Bruijn Indices and Substitution
 
 
-### Weeks 4-5: Functions/Lambda Expressions
+### Week 5: Functions
+
+
+### Week 6: Sums
 
 ## References
 
