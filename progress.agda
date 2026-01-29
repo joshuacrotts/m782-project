@@ -1,5 +1,6 @@
 module Progress where
 
+open import Rename
 open import Context
 open import Syntax
 open import Semantics
@@ -84,5 +85,5 @@ progress (τ-lam {e = e} {τ1 = τ1} {τ2 = τ2} e-ty) = inj₁ (vτ-lam) -- lam
 progress (τ-app {f = f} {e = e} {τ1 = τ1} {τ2 = τ2} f-ty e-ty) with progress f-ty
 ... | inj₂ (f' , stepf)           = inj₂ (app f' e , ss-app-func stepf) -- if f steps, the application steps.
 ... | inj₁ (vτ-lam {e = body}) with progress e-ty   -- Induct on the argument e
-...     | inj₁ varg               = {!   !}        -- Either e is a val, so we beta reduce/substitute.
+...     | inj₁ varg               = inj₂ (sub0 e body , ss-app-beta varg)        -- Either e is a val, so we beta reduce/substitute.
 ...     | inj₂ (e' , stepe)       = inj₂ (app f e' , ss-app-arg stepe) -- or e steps.
