@@ -8,10 +8,16 @@ open import Types
  - produce a type. 
  - For example, vτ-true is a proof that true is a value of type 𝔹. -}
 data Valτ : τ → Term → Set where
-  vτ-true  : Valτ 𝔹 true
-  vτ-false : Valτ 𝔹 false
+  vτ-true  : Valτ Bool true
+  vτ-false : Valτ Bool false
 
-  vτ-zero  : Valτ ℕ zero
-  vτ-suc   : ∀ {v} → Valτ ℕ v → Valτ ℕ (suc v)
+  vτ-zero  : Valτ Nat zero
+  vτ-suc   : ∀ {v} → Valτ Nat v → Valτ Nat (suc v)
 
   vτ-cons  : ∀ {τ1 τ2 v1 v2} → Valτ τ1 v1 → Valτ τ2 v2 → Valτ (τ1 × τ2) (cons v1 v2)
+  
+  vτ-inl : ∀ {τ1 τ2 v} → Valτ τ1 v → Valτ (τ1 + τ2) (inl v)
+  vτ-inr : ∀ {τ1 τ2 v} → Valτ τ2 v → Valτ (τ1 + τ2) (inr v)
+
+  vτ-lam : ∀ {τ1 τ2 e} → Valτ (τ1 ⇒ τ2) (lam e)
+  

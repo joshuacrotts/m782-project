@@ -1,62 +1,89 @@
 module Syntax where
 
+open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Data.Maybe using (Maybe; just; nothing)
+
+open import Context
 open import Terms
 open import Types
 
 -- Typing judgments--
 
-infix 4 ⊢_∶_
+infix 4 _⊢_∶_
 
-data ⊢_∶_ : Term → τ → Set where
+data _⊢_∶_ : Context → Term → τ → Set where
+
+    --
+    -- ---------------------------
+    --  Γ, x : τ    x : τ
+    τ-var : ∀ {Γ x τ} → (lookup x Γ ≡ just τ) → (Γ ⊢ var x ∶ τ)
 
     --
     -- ---------------------------
     --      true has type 𝔹
-    τ-true : ⊢ true ∶ 𝔹
+    τ-true : ∀ {Γ} → (Γ ⊢ true ∶ Bool)
 
     --
     -- ---------------------------
     --      false has type 𝔹
-    τ-false : ⊢ false ∶ 𝔹
+    τ-false : ∀ {Γ} → (Γ ⊢ false ∶ Bool)
 
     --
     -- ---------------------------
-    --      zero : nat
-    τ-zero : ⊢ zero ∶ ℕ
+    --      Γ ⊢ zero : Nat
+    τ-zero : ∀ {Γ} → (Γ ⊢ zero ∶ Nat)
 
-    --        e : ℕ
+    --        Γ ⊢e : Nat
     -- ---------------------------
-    --      suc(e) : ℕ
-    τ-suc : ∀ {e} → (⊢ e ∶ ℕ) → (⊢ suc e ∶ ℕ)
+    --      Γ ⊢ suc(e) : Nat
+    τ-suc : ∀ {Γ e} → (Γ ⊢ e ∶ Nat) → (Γ ⊢ suc e ∶ Nat)
 
-    --        e : ℕ
+    --        Γ ⊢ e : Nat
     -- ---------------------------
-    --      pred(e) : ℕ
-    τ-pred : ∀ {e} → (⊢ e ∶ ℕ) → (⊢ pred e ∶ ℕ)
+    --      Γ ⊢ pred(e) : Nat
+    τ-pred : ∀ {Γ e} → (Γ ⊢ e ∶ Nat) → (Γ ⊢ pred e ∶ Nat)
 
-    --        e : ℕ
+    --        Γ ⊢ e : Nat
     -- ---------------------------
-    --      zero?(e) : 𝔹
-    τ-zero? : ∀ {e} → (⊢ e ∶ ℕ) → (⊢ zero? e ∶ 𝔹)
+    --      Γ ⊢ zero?(e) : Bool
+    τ-zero? : ∀ {Γ e} → (Γ ⊢ e ∶ Nat) → (Γ ⊢ zero? e ∶ Bool)
 
-    --   e1 : 𝔹   e2 : τ    e3 : τ
+    --   e1 : Bool   e2 : τ    e3 : τ
     -- ---------------------------
     --      if e1 e2 e3 : τ
-    τ-if : ∀ {e1 e2 e3 τ} → (⊢ e1 ∶ 𝔹) → (⊢ e2 ∶ τ) → (⊢ e3 ∶ τ) → (⊢ if e1 e2 e3 ∶ τ)
+    τ-if : ∀ {Γ e1 e2 e3 τ} → (Γ ⊢ e1 ∶ Bool) → (Γ ⊢ e2 ∶ τ) → (Γ ⊢ e3 ∶ τ) → (Γ ⊢ if e1 e2 e3 ∶ τ)
 
     --  e1 : τ₁   e2 : τ₂
     -- ---------------------------
     --      cons e1 e2 : τ₁ × τ₂
-    τ-cons : ∀ {e1 e2 τ1 τ2} → (⊢ e1 ∶ τ1) → (⊢ e2 ∶ τ2) → (⊢ cons e1 e2 ∶ τ1 × τ2)
+    τ-cons : ∀ {Γ e1 e2 τ1 τ2} → (Γ ⊢ e1 ∶ τ1) → (Γ ⊢ e2 ∶ τ2) → (Γ ⊢ cons e1 e2 ∶ τ1 × τ2)
 
     --      e : τ₁ × τ₂
     -- ---------------------------
     --      fst e : τ₁
-    τ-fst : ∀ {e τ1 τ2} → (⊢ e ∶ τ1 × τ2) → (⊢ fst e ∶ τ1)
+    τ-fst : ∀ {Γ e τ1 τ2} → (Γ ⊢ e ∶ τ1 × τ2) → (Γ ⊢ fst e ∶ τ1)
 
     --      e : τ₁ × τ₂
     -- ---------------------------
     --      snd e : τ₂
-    τ-snd : ∀ {e τ1 τ2} → (⊢ e ∶ τ1 × τ2) → (⊢ snd e ∶ τ2)
-    
+    τ-snd : ∀ {Γ e τ1 τ2} → (Γ ⊢ e ∶ τ1 × τ2) → (Γ ⊢ snd e ∶ τ2)
 
+    --   Γ, x : τ1 → e : τ2
+    -- ---------------------------
+    --  Γ ⊢ lam e : τ1 ⇒ τ2
+    τ-lam : ∀ {Γ e τ1 τ2} → (Γ , τ1 ⊢ e ∶ τ2) → (Γ ⊢ (lam e) ∶ τ1 ⇒ τ2)
+
+    -- Γ ⊢ f : τ1 ⇒ τ2   Γ ⊢ e : τ1
+    -- ---------------------------
+    --  Γ ⊢ f e : τ2
+    τ-app : ∀ {Γ f e τ1 τ2} → (Γ ⊢ f ∶ τ1 ⇒ τ2) → (Γ ⊢ e ∶ τ1) → (Γ ⊢ app f e ∶ τ2)
+
+    -- --         Γ ⊢ e : τ₁         
+    -- -- ---------------------------
+    -- --      Γ ⊢ inl e : τ₁ + τ₂
+    -- τ-inl : ∀ {Γ e τ1 τ2} → (Γ ⊢ e ∶ τ1) → (Γ ⊢ inl e ∶ τ1 + τ2)
+    
+    -- --         Γ ⊢ e : τ₂         
+    -- -- ---------------------------
+    -- --      Γ ⊢ inr e : τ₁ + τ₂
+    -- τ-inr : ∀ {Γ e τ1 τ2} → (Γ ⊢ e ∶ τ2) → (Γ ⊢ inr e ∶ τ1 + τ2)

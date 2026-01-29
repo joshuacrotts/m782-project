@@ -17,10 +17,10 @@ data _↦_ : Term → Term → Set where
     --       zero?(zero) ↦ true
     ss-zero? : zero?(zero) ↦ true
 
-    --           v Valτ ℕ
+    --           v Valτ Nat
     -- -------------------------------
     --      zero?(suc(v)) ↦ false
-    ss-zero?-suc : ∀ {v} → Valτ ℕ v → zero?(suc(v)) ↦ false
+    ss-zero?-suc : ∀ {v} → Valτ Nat v → zero?(suc(v)) ↦ false
 
     -- 
     -- -------------------------------
@@ -37,11 +37,10 @@ data _↦_ : Term → Term → Set where
     --     pred(zero) ↦ zero
     ss-pred-zero : pred(zero) ↦ zero
 
-    --           v Valτ ℕ
+    --           v Valτ Nat
     -- -------------------------------
     --      pred(suc(v)) ↦ v
-    ss-pred-suc : ∀ {v} → Valτ ℕ v → pred(suc(v)) ↦ v
-
+    ss-pred-suc : ∀ {v} → Valτ Nat v → pred(suc(v)) ↦ v
 
     --   v1 Valτ τ1    v2 Valτ τ2
     -- -----------------------------
@@ -96,3 +95,18 @@ data _↦_ : Term → Term → Set where
     -- ---------------------
     --     snd e ↦ snd e'
     ss-snd-step : ∀ {e e'} → (e ↦ e') → (snd e ↦ snd e')
+
+    --          e ↦ e'
+    -- ----------------------------
+    --   lam e ↦ lam e'
+    ss-lam-step : ∀ {e e'} → (e ↦ e') → (lam e ↦ lam e')
+
+    --   f ↦ f'
+    -- ----------------------------
+    --   app f e ↦ app f' e
+    ss-app-func : ∀ {f f' e} → (f ↦ f') → (app f e ↦ app f' e)
+
+    --   e ↦ e'
+    -- ----------------------------
+    --   app f e ↦ app f e'
+    ss-app-arg : ∀ {f e e'} → (e ↦ e') → (app f e ↦ app f e')

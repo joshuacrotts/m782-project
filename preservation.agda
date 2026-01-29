@@ -1,21 +1,21 @@
 module Preservation where
 
+open import Context
 open import Syntax
 open import Semantics
 open import Values
 open import Types
-open import Progress
 open import Terms
 
 
 ------------------------------------------------------------------------
 
 -- Preservation theorem
--- If e : τ and e ↦ e' then e' : τ
+-- If ∘ ⊢ e : τ and e ↦ e' then ∘ ⊢ e' : τ
 preservation : ∀ {e e' τ} →
-             (⊢ e ∶ τ) →
+             (∘ ⊢ e ∶ τ) →
              (e ↦ e') →
-             (⊢ e' ∶ τ)
+             (∘ ⊢ e' ∶ τ)
 
 -- Proof by induction on the step relation
 preservation (τ-zero? τ-zero) ss-zero?                                          = τ-true
@@ -45,3 +45,9 @@ preservation (τ-fst τ₁×₂)           (ss-fst-step step) =    -- fst e step
 preservation (τ-snd (τ-cons τ₁ τ₂)) (ss-snd v1 v2)     = τ₂     -- snd (cons v1 v2) steps to v2
 preservation (τ-snd τ₁×₂)           (ss-snd-step step) =    -- snd e steps to snd e'
   τ-snd (preservation τ₁×₂ step)
+
+preservation (τ-lam e-ty) (ss-lam-step step)       = {!   !} -- lam e steps to lam e'
+preservation (τ-app f-ty e-ty) (ss-app-func stepf) = {!   !} -- if f steps, the application steps.
+preservation (τ-app f-ty e-ty) (ss-app-arg stepe)  = {!   !} -- or e steps.
+
+-- We still need the substitution cases.
