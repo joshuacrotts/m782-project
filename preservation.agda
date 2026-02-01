@@ -11,12 +11,12 @@ open import Terms
 ------------------------------------------------------------------------
 
 -- Preservation theorem
--- If ∘ ⊢ e : τ and e ↦ e' then ∘ ⊢ e' : τ
+-- If ∘ ⊢ e ⦂ τ and e ↦ e' then ∘ ⊢ e' ⦂ τ
 preservation : ∀ {e e' τ} →
-             (∘ ⊢ e ∶ τ) →
+             (∘ ⊢ e ⦂ τ) →
              (e ↦ e') →
-             (∘ ⊢ e' ∶ τ)
-
+             (∘ ⊢ e' ⦂ τ)
+             
 -- Proof by induction on the step relation
 preservation (τ-zero? τ-zero) ss-zero?                                          = τ-true
 preservation (τ-zero? (τ-suc τ₁)) (ss-zero?-suc nv)                             = τ-false
@@ -46,11 +46,11 @@ preservation (τ-snd (τ-cons τ₁ τ₂)) (ss-snd v1 v2)     = τ₂     -- sn
 preservation (τ-snd τ₁×₂)           (ss-snd-step step) =    -- snd e steps to snd e'
   τ-snd (preservation τ₁×₂ step)
 
--- app: function steps
-preservation (τ-app fTy eTy) (ss-app-func stepf) = τ-app (preservation fTy stepf) eTy
+-- -- app: function steps
+-- preservation (τ-app fTy eTy) (ss-app-func stepf) = τ-app (preservation fTy stepf) eTy
 
--- app: argument steps
-preservation (τ-app fTy eTy) (ss-app-arg stepe) = τ-app fTy (preservation eTy stepe)
+-- -- app: argument steps
+-- preservation (τ-app fTy eTy) (ss-app-arg stepe) = τ-app fTy (preservation eTy stepe)
 
--- app: beta
-preservation (τ-app (τ-lam bodyTy) vTy) (ss-app-beta vVal) = {!   !}
+-- -- app: beta
+-- preservation (τ-app (τ-lam bodyTy) vTy) (ss-app-beta vVal) = {!   !}

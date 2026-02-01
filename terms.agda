@@ -6,9 +6,9 @@ module Terms where
 -- Terms for now are booleans and natural numbers.
 -- 
 data Term : Set where
-    var     : ℕ → Term
-    lam     : Term → Term
-    app     : Term → Term → Term
+    -- var     : ℕ → Term
+    -- lam     : Term → Term
+    -- app     : Term → Term → Term
     true    : Term
     false   : Term
     zero    : Term
@@ -19,7 +19,7 @@ data Term : Set where
     cons    : Term → Term → Term
     fst     : Term → Term
     snd     : Term → Term
-    inl     : Term → Term
-    inr     : Term → Term
-    case    : Term → Term → Term → Term
+    -- inl     : Term → Term
+    -- inr     : Term → Term
+    -- case    : Term → Term → Term → Term
     

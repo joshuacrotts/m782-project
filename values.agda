@@ -16,8 +16,3 @@ data Valτ : τ → Term → Set where
 
   vτ-cons  : ∀ {τ1 τ2 v1 v2} → Valτ τ1 v1 → Valτ τ2 v2 → Valτ (τ1 × τ2) (cons v1 v2)
   
-  vτ-inl : ∀ {τ1 τ2 v} → Valτ τ1 v → Valτ (τ1 + τ2) (inl v)
-  vτ-inr : ∀ {τ1 τ2 v} → Valτ τ2 v → Valτ (τ1 + τ2) (inr v)
-
-  vτ-lam : ∀ {τ1 τ2 e} → Valτ (τ1 ⇒ τ2) (lam e)
-  

@@ -4,7 +4,6 @@ module Semantics where
 -- Small-step semantics
 ------------------------------------------------------------------------
 
-open import Rename
 open import Types
 open import Terms
 open import Values
@@ -97,22 +96,22 @@ data _↦_ : Term → Term → Set where
     --     snd e ↦ snd e'
     ss-snd-step : ∀ {e e'} → (e ↦ e') → (snd e ↦ snd e')
 
-    --          e ↦ e'
-    -- ----------------------------
-    --   lam e ↦ lam e'
-    ss-lam-step : ∀ {e e'} → (e ↦ e') → (lam e ↦ lam e')
+    -- --          e ↦ e'
+    -- -- ----------------------------
+    -- --   lam e ↦ lam e'
+    -- ss-lam-step : ∀ {e e'} → (e ↦ e') → (lam e ↦ lam e')
 
-    --   f ↦ f'
-    -- ----------------------------
-    --   app f e ↦ app f' e
-    ss-app-func : ∀ {f f' e} → (f ↦ f') → (app f e ↦ app f' e)
+    -- --   f ↦ f'
+    -- -- ----------------------------
+    -- --   app f e ↦ app f' e
+    -- ss-app-func : ∀ {f f' e} → (f ↦ f') → (app f e ↦ app f' e)
 
-    --   e ↦ e'
-    -- ----------------------------
-    --   app f e ↦ app f e'
-    ss-app-arg : ∀ {f e e'} → (e ↦ e') → (app f e ↦ app f e')
+    -- --   e ↦ e'
+    -- -- ----------------------------
+    -- --   app f e ↦ app f e'
+    -- ss-app-arg : ∀ {f e e'} → (e ↦ e') → (app f e ↦ app f e')
 
-    --   v1 val
-    -- ----------------------------
-    -- app (lam body) v1 ↦ [v1/0] body
-    ss-app-beta : ∀ {body v1 τ1} → Valτ τ1 v1 → app (lam body) v1 ↦ sub0 v1 body
+    -- --   v1 val
+    -- -- ----------------------------
+    -- -- app (lam body) v1 ↦ [v1/0] body
+    -- ss-app-beta : ∀ {body v1 τ1} → Valτ τ1 v1 → app (lam body) v1 ↦ sub0 v1 body

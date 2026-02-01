@@ -1,6 +1,5 @@
 module Progress where
 
-open import Rename
 open import Context
 open import Syntax
 open import Semantics
@@ -15,17 +14,12 @@ open import Data.Empty using (⊥; ⊥-elim)
 
 
 -- Progress theorem
--- If ∘ ⊢ e : τ then either e Val or e steps to e'.
+-- If ∘ ⊢ e ⦂ τ then either e Val or e steps to e'.
 progress : ∀ {e τ} → 
-         (∘ ⊢ e ∶ τ) → 
+         (∘ ⊢ e ⦂ τ) → 
          (Valτ τ e ⊎ Σ[ e' ∈ Term ] (e ↦ e'))
 
 -- Proof by induction on typing derivation
-
--- var case
-progress (τ-var {x = x} {τ = t} lookup-eq) =
-  ⊥-elim (lookup∘≢just {x = x} {t = t} lookup-eq) -- variables cannot be typed in empty context
-
 -- true case
 progress τ-true  = inj₁ (vτ-true)
 
@@ -76,14 +70,3 @@ progress (τ-fst {e = e} {τ1 = τ1} {τ2 = τ2} τ₁ₓ₂) with progress τ�
 progress (τ-snd {e = e} {τ1 = τ1} {τ2 = τ2} τ₁ₓ₂) with progress τ₁ₓ₂  -- induct on the typing of e
 ... | inj₁ (vτ-cons {v1 = v1t} {v2 = v2t} v1 v2)    = inj₂ (v2t , ss-snd v1 v2) -- if e is a value cons(v1, v2), then snd(cons(v1, v2)) steps to v2
 ... | inj₂ (e' , step)                              = inj₂ (snd e' , ss-snd-step step)
-
--- lam case
-progress (τ-lam {e = e} {τ1 = τ1} {τ2 = τ2} e-ty) = inj₁ (vτ-lam) -- lambdas are values
-
-
--- app case
-progress (τ-app {f = f} {e = e} {τ1 = τ1} {τ2 = τ2} f-ty e-ty) with progress f-ty
-... | inj₂ (f' , stepf)           = inj₂ (app f' e , ss-app-func stepf) -- if f steps, the application steps.
-... | inj₁ (vτ-lam {e = body}) with progress e-ty   -- Induct on the argument e
-...     | inj₁ varg               = inj₂ (sub0 e body , ss-app-beta varg)        -- Either e is a val, so we beta reduce/substitute.
-...     | inj₂ (e' , stepe)       = inj₂ (app f e' , ss-app-arg stepe) -- or e steps.
