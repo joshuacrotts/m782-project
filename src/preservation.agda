@@ -1,11 +1,13 @@
 module Preservation where
 
-open import Context
-open import Syntax
-open import Semantics
-open import Values
-open import Types
-open import Terms
+-- open import Context
+
+open import SystemF.Types
+open import SystemF.Terms
+open import SystemF.Values
+open import SystemF.Context
+open import SystemF.Typing
+open import SystemF.Semantics
 
 
 ------------------------------------------------------------------------

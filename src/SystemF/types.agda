@@ -1,4 +1,4 @@
-module Types where
+module SystemF.Types where
 
 --
 -- Types for now are booleans and natural numbers.

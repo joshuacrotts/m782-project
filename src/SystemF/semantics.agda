@@ -1,12 +1,12 @@
-module Semantics where
+module SystemF.Semantics where
 
 ------------------------------------------------------------------------
 -- Small-step semantics
 ------------------------------------------------------------------------
 
-open import Types
-open import Terms
-open import Values
+open import SystemF.Types
+open import SystemF.Terms
+open import SystemF.Values
 
 infix 3 _↦_
 

@@ -1,6 +1,13 @@
+open import SystemF.Types
 open import Data.Nat using (ℕ)
 
-module Terms where
+module SystemF.Terms where
+
+--
+-- Variables for lambda.
+-- 
+data Variable : Set where
+    var : ℕ → Variable
 
 --
 -- Terms for now are booleans and natural numbers.
@@ -22,4 +29,5 @@ data Term : Set where
     -- inl     : Term → Term
     -- inr     : Term → Term
     -- case    : Term → Term → Term → Term
-    
+
+

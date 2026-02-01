@@ -1,7 +1,7 @@
-module Values where
+module SystemF.Values where
 
-open import Terms
-open import Types
+open import SystemF.Terms
+open import SystemF.Types
 
 {- Values are terms that cannot step further.
  - Here we define the value judgments as being inductive types that receive a type, a term, and
