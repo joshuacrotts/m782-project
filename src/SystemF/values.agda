@@ -15,6 +15,6 @@ data Valτ : τ → Term → Set where
   vτ-suc   : ∀ {v} → Valτ Nat v → Valτ Nat (suc v)
 
   vτ-cons  : ∀ {τ1 τ2 v1 v2} → Valτ τ1 v1 → Valτ τ2 v2 → Valτ (τ1 × τ2) (cons v1 v2)
-  
+
   vτ-lam   : ∀ {τ1 τ2 body} → Valτ (τ1 ⇒ τ2) (lam body)
   

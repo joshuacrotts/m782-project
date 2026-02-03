@@ -96,20 +96,15 @@ data _↦_ : Term → Term → Set where
     --     snd e ↦ snd e'
     ss-snd-step : ∀ {e e'} → (e ↦ e') → (snd e ↦ snd e')
 
-    -- --          e ↦ e'
-    -- -- ----------------------------
-    -- --   lam e ↦ lam e'
-    -- ss-lam-step : ∀ {e e'} → (e ↦ e') → (lam e ↦ lam e')
+    --   f ↦ f'
+    -- ----------------------------
+    --   app f e ↦ app f' e
+    ss-app-func : ∀ {f f' e} → (f ↦ f') → (app f e ↦ app f' e)
 
-    -- --   f ↦ f'
-    -- -- ----------------------------
-    -- --   app f e ↦ app f' e
-    -- ss-app-func : ∀ {f f' e} → (f ↦ f') → (app f e ↦ app f' e)
-
-    -- --   e ↦ e'
-    -- -- ----------------------------
-    -- --   app f e ↦ app f e'
-    -- ss-app-arg : ∀ {f e e'} → (e ↦ e') → (app f e ↦ app f e')
+    --   e ↦ e'
+    -- ----------------------------
+    --   app f e ↦ app f e'
+    ss-app-arg : ∀ {f e e'} → (e ↦ e') → (app f e ↦ app f e')
 
     -- --   v1 val
     -- -- ----------------------------
