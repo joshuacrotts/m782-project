@@ -45,7 +45,7 @@ progress (τ-pred τ₁) with progress τ₁
 
 -- zero? case
 progress (τ-zero? τ₁) with progress τ₁
-... | inj₁ vτ-zero            = inj₂ (true , ss-zero?) -- zero?(zero) steps to true
+... | inj₁ vτ-zero              = inj₂ (true , ss-zero?) -- zero?(zero) steps to true
 ... | inj₁ (vτ-suc {v = v₁} v)  = inj₂ (false , ss-zero?-suc v) -- zero?(suc(v)) steps to false
 ... | inj₂ (e' , step)          = inj₂ (zero? e' , ss-zero?-step step) -- zero?(e) steps to zero?(e')
 

@@ -14,7 +14,7 @@ data Variable : Set where
 -- 
 data Term : Set where
     -- var     : ℕ → Term
-    -- lam     : Term → Term
+    lam     : Term → Term
     -- app     : Term → Term → Term
     true    : Term
     false   : Term
