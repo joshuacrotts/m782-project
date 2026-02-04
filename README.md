@@ -20,6 +20,7 @@ We will prove type-soundness in a piecemeal fashion: proving it for the entirety
 
 ### Weeks 3-4: de Bruijn Indices and Substitution
 
+We are currently stuck on trying to implement variable bindings for functions and sum types. Both rely on contexts and bindings, and therefore we need to resolve the issue of capture-avoiding substitution. This also allows us to prove the substitution lemma and therefore continue proving progress and preservation.
 
 ### Week 5: Functions
 
