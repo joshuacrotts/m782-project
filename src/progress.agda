@@ -1,10 +1,11 @@
 module Progress where
 
--- open import Context
+import SystemF.Context as C
+open C using (Context; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
+
 open import SystemF.Types
 open import SystemF.Terms
 open import SystemF.Values
-open import SystemF.Context
 open import SystemF.Typing
 open import SystemF.Semantics
 
@@ -32,7 +33,7 @@ progress τ-zero  = inj₁ (vτ-zero)
 
 -- suc case (typed values)
 progress (τ-suc τ₁) with progress τ₁
-... | inj₁ v            = inj₁ (vτ-suc v)
+... | inj₁ v              = inj₁ (vτ-suc v)
 ... | inj₂ (e' , st)    = inj₂ (suc e' , ss-suc-step st)
 
 
@@ -40,7 +41,7 @@ progress (τ-suc τ₁) with progress τ₁
 progress (τ-pred τ₁) with progress τ₁
 ... | inj₁ vτ-zero              = inj₂ (zero , ss-pred-zero)         -- pred(zero) steps to zero
 ... | inj₁ (vτ-suc {v = v₁} v)  = inj₂ (v₁ , ss-pred-suc v)          -- pred(suc(v)) steps to v
-... | inj₂ (e' , step)          = inj₂ (pred e' , ss-pred-step step) -- if e steps, pred e steps.
+... | inj₂ (e' , step)          = inj₂ (pred e' , ss-pred-step step)
 
 
 -- zero? case
