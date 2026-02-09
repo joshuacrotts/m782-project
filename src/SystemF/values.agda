@@ -18,3 +18,6 @@ data Valτ : τ → Term → Set where
 
   vτ-lam   : ∀ {τ1 τ2 body} → Valτ (τ1 ⇒ τ2) (Lam body)
   
+  vτ-inl  : ∀ {τ1 τ2 v} → Valτ τ1 v → Valτ (τ1 + τ2) (Inl v)
+  vτ-inr  : ∀ {τ1 τ2 v} → Valτ τ2 v → Valτ (τ1 + τ2) (Inr v)
+  

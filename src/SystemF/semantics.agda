@@ -29,28 +29,26 @@ open import SystemF.Values
 β (Var m) s n with m ≡ᵇ n 
 ... | true  = s
 ... | false = Var m
-β (Lam t) s n = Lam (β t s (suc n)) 
-β (App t u) s n = App (β t s n) (β u s n)
-β True s n = True   
-β False s n = False
-β Zero s n = Zero
-β (Suc t) s n = Suc (β t s n)
-β (Pred t) s n = Pred (β t s n)
-β (Zero? t) s n = Zero? (β t s n)
-β (If t u v) s n = If (β t s n) (β u s n) (β v s n)
-β (Cons t u) s n = Cons (β t s n) (β u s n)
-β (Fst t) s n = Fst (β t s n)
-β (Snd t) s n = Snd (β t s n)
-
+β (Lam t) s n               = Lam (β t s (suc n)) 
+β (App t u) s n             = App (β t s n) (β u s n)
+β True s n                  = True   
+β False s n                 = False
+β Zero s n                  = Zero
+β (Suc t) s n               = Suc (β t s n)
+β (Pred t) s n              = Pred (β t s n)
+β (Zero? t) s n             = Zero? (β t s n)
+β (If t u v) s n            = If (β t s n) (β u s n) (β v s n)
+β (Cons t u) s n            = Cons (β t s n) (β u s n)
+β (Fst t) s n               = Fst (β t s n)
+β (Snd t) s n               = Snd (β t s n)
+β (Inl t) s n               = Inl (β t s n)
+β (Inr t) s n               = Inr (β t s n)
+β (Case sum left right) s n = Case (β sum s n) (β left s n) (β right s n)
 
 infixl 5 _[_]
 
 _[_] : Term → Term →  Term
 t [ s ] = β t s 0
-
-
-
-
 
 
 
@@ -157,3 +155,13 @@ data _↦_ : Term → Term → Set where
     -- -- ----------------------------
     -- -- app (lam body) v1 ↦ body [v1 / x]
     ss-app-beta : ∀ {body v1 τ1} → Valτ τ1 v1 → App (Lam body) v1 ↦ body [ v1 ]
+
+    --  e ↦ e'
+    -- -----------------------------
+    -- inl e ↦ inl e'
+    ss-inl-step : ∀ {e e'} → (e ↦ e') → (Inl e ↦ Inl e')
+
+    --  e ↦ e'
+    -- -----------------------------
+    -- inr e ↦ inr e'
+    ss-inr-step : ∀ {e e'} → (e ↦ e') → (Inr e ↦ Inr e')

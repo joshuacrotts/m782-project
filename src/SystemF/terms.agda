@@ -21,7 +21,7 @@ data Term : Set where
     Cons    : Term → Term → Term
     Fst     : Term → Term
     Snd     : Term → Term
-    -- inl     : Term → Term
-    -- inr     : Term → Term
-    -- case    : Term → Term → Term → Term
+    Inl     : Term → Term
+    Inr     : Term → Term
+    Case    : Term → Term → Term → Term
 

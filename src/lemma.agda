@@ -1,6 +1,6 @@
-module Lemma where
+{-# OPTIONS --allow-unsolved-metas #-}
 
--- open import Context
+module Lemma where
 
 open import Data.Maybe using (Maybe; just; nothing)
 open import Data.Maybe.Properties using (just-injective)
@@ -56,15 +56,17 @@ open import SystemF.Semantics
 τ-weakening τ-true = τ-true
 τ-weakening τ-false = τ-false
 τ-weakening τ-zero = τ-zero
-τ-weakening {Γ₁} {Γ₂} (τ-suc τ₁) = τ-suc (τ-weakening {Γ₁} {Γ₂} τ₁)
-τ-weakening {Γ₁} {Γ₂} (τ-pred τ₁) = τ-pred (τ-weakening {Γ₁} {Γ₂} τ₁)
-τ-weakening {Γ₁} {Γ₂} (τ-zero? τ₁) = τ-zero? (τ-weakening {Γ₁} {Γ₂} τ₁)
-τ-weakening {Γ₁} {Γ₂} (τ-if τ₁ τ₂ τ₃) = τ-if (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂) (τ-weakening {Γ₁} {Γ₂} τ₃)
-τ-weakening {Γ₁} {Γ₂} (τ-cons τ₁ τ₂) = τ-cons (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂)
-τ-weakening {Γ₁} {Γ₂} (τ-fst τ₁×₂) = τ-fst (τ-weakening {Γ₁} {Γ₂} τ₁×₂)
-τ-weakening {Γ₁} {Γ₂} (τ-snd τ₁×₂) = τ-snd (τ-weakening {Γ₁} {Γ₂} τ₁×₂)
-τ-weakening {Γ₁} {Γ₂} (τ-app fTy eTy) = τ-app (τ-weakening {Γ₁} {Γ₂} fTy) (τ-weakening {Γ₁} {Γ₂} eTy)
-τ-weakening {Γ₁} {Γ₂} (τ-var lookupN) = τ-var (lookup-concat  {Γ₁} {Γ₂} lookupN)
+τ-weakening {Γ₁} {Γ₂} (τ-suc τ₁)        = τ-suc (τ-weakening {Γ₁} {Γ₂} τ₁)
+τ-weakening {Γ₁} {Γ₂} (τ-pred τ₁)       = τ-pred (τ-weakening {Γ₁} {Γ₂} τ₁)
+τ-weakening {Γ₁} {Γ₂} (τ-zero? τ₁)      = τ-zero? (τ-weakening {Γ₁} {Γ₂} τ₁)
+τ-weakening {Γ₁} {Γ₂} (τ-if τ₁ τ₂ τ₃)   = τ-if (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂) (τ-weakening {Γ₁} {Γ₂} τ₃)
+τ-weakening {Γ₁} {Γ₂} (τ-cons τ₁ τ₂)    = τ-cons (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂)
+τ-weakening {Γ₁} {Γ₂} (τ-fst τ₁×₂)      = τ-fst (τ-weakening {Γ₁} {Γ₂} τ₁×₂)
+τ-weakening {Γ₁} {Γ₂} (τ-snd τ₁×₂)      = τ-snd (τ-weakening {Γ₁} {Γ₂} τ₁×₂)
+τ-weakening {Γ₁} {Γ₂} (τ-app fTy eTy)   = τ-app (τ-weakening {Γ₁} {Γ₂} fTy) (τ-weakening {Γ₁} {Γ₂} eTy)
+τ-weakening {Γ₁} {Γ₂} (τ-inl τ₁)        = τ-inl (τ-weakening {Γ₁} {Γ₂} τ₁)
+τ-weakening {Γ₁} {Γ₂} (τ-inr τ2)        = τ-inr (τ-weakening {Γ₁} {Γ₂} τ2)
+τ-weakening {Γ₁} {Γ₂} (τ-var lookupN)   = τ-var (lookup-concat  {Γ₁} {Γ₂} lookupN)
 τ-weakening {Γ₁} {Γ₂} {e} {τ₁} (τ-lam {Γ} {τ₃} {τ₄} {e'} bodyTy) = 
     let aa = concat-append {Γ₁} {Γ₂} {τ₃}
         bb = τ-weakening {Γ₁} {Γ , τ₃} bodyTy
@@ -77,17 +79,19 @@ subst-τ : ∀ {Γ i τ₁ τ₂ body v} →
                  ((τ₁ ∷ Γ) ⊢ body ⦂ τ₂) →
                  (∘ ⊢ v ⦂ τ₁) →
                  (Γ ⊢ (β body v i) ⦂ τ₂)
-subst-τ |Γ|≡i (τ-true) vTy = τ-true
-subst-τ |Γ|≡i (τ-false) vTy = τ-false
-subst-τ |Γ|≡i (τ-zero) vTy = τ-zero
-subst-τ |Γ|≡i (τ-suc τ₁) vTy = τ-suc (subst-τ |Γ|≡i τ₁ vTy)
-subst-τ |Γ|≡i (τ-pred τ₁) vTy = τ-pred (subst-τ |Γ|≡i τ₁ vTy)
-subst-τ |Γ|≡i (τ-zero? τ₁) vTy = τ-zero? (subst-τ |Γ|≡i τ₁ vTy)
-subst-τ |Γ|≡i (τ-if τ₁ τ₂ τ₃) vTy = τ-if (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy) (subst-τ |Γ|≡i τ₃ vTy)
-subst-τ |Γ|≡i (τ-cons τ₁ τ₂) vTy = τ-cons (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy)
-subst-τ |Γ|≡i (τ-fst τ₁×₂) vTy = τ-fst (subst-τ |Γ|≡i τ₁×₂ vTy)
-subst-τ |Γ|≡i (τ-snd τ₁×₂) vTy = τ-snd (subst-τ |Γ|≡i τ₁×₂ vTy)
-subst-τ |Γ|≡i (τ-app fTy eTy) vTy = τ-app (subst-τ |Γ|≡i fTy vTy) (subst-τ |Γ|≡i eTy vTy)
+subst-τ |Γ|≡i (τ-true) vTy          = τ-true
+subst-τ |Γ|≡i (τ-false) vTy         = τ-false
+subst-τ |Γ|≡i (τ-zero) vTy          = τ-zero
+subst-τ |Γ|≡i (τ-suc τ₁) vTy        = τ-suc (subst-τ |Γ|≡i τ₁ vTy)
+subst-τ |Γ|≡i (τ-pred τ₁) vTy       = τ-pred (subst-τ |Γ|≡i τ₁ vTy)
+subst-τ |Γ|≡i (τ-zero? τ₁) vTy      = τ-zero? (subst-τ |Γ|≡i τ₁ vTy)
+subst-τ |Γ|≡i (τ-if τ₁ τ₂ τ₃) vTy   = τ-if (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy) (subst-τ |Γ|≡i τ₃ vTy)
+subst-τ |Γ|≡i (τ-cons τ₁ τ₂) vTy    = τ-cons (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy)
+subst-τ |Γ|≡i (τ-fst τ₁×₂) vTy      = τ-fst (subst-τ |Γ|≡i τ₁×₂ vTy)
+subst-τ |Γ|≡i (τ-snd τ₁×₂) vTy      = τ-snd (subst-τ |Γ|≡i τ₁×₂ vTy)
+subst-τ |Γ|≡i (τ-app fTy eTy) vTy   = τ-app (subst-τ |Γ|≡i fTy vTy) (subst-τ |Γ|≡i eTy vTy)
+subst-τ |Γ|≡i (τ-inl τ₁) vTy        = τ-inl (subst-τ |Γ|≡i τ₁ vTy)
+subst-τ |Γ|≡i (τ-inr τ₂) vTy        = τ-inr (subst-τ |Γ|≡i τ₂ vTy)
 subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-var {Γ'} {m} lookupN) vTy with m ≡ᵇ i in eq
 ... | true  = 
     let m≡i = ≡ᵇ⇒≡ m i (subst T (sym eq) tt)
@@ -106,9 +110,6 @@ subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-var {Γ'} {m} lookupN)
 subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-lam {Γ'} {τ₃} {τ₄} bodyTy) vTy  = 
     τ-lam  (subst-τ (cong suc |Γ|≡i) bodyTy vTy)
     
-
-
-
 
 subst0-τ : ∀ {τ₁ τ₂ body v} →
             (∘ , τ₁ ⊢ body ⦂ τ₂) →
