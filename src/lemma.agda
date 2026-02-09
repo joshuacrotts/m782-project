@@ -20,30 +20,7 @@ open import SystemF.Typing
 open import SystemF.Semantics
 
 
-
-
--- fresh-nothing : ∀ (Γ : Context) (x : ℕ) → fresh? x Γ ≡ true → lookup x Γ ≡ nothing
--- fresh-nothing ∘ _ _ = refl
--- fresh-nothing (Γ ,[ y ⦂ _ ]) x fresh with x ≡ᵇ y
--- ... | false = fresh-nothing Γ x fresh
-
-
--- weakening : ∀ {Γ x y τ₁ τ₂} → (fresh? x Γ ≡ true) → 
---             (lookup y Γ ≡ just τ₁) → (lookup y (Γ ,[ x ⦂ τ₂ ]) ≡ just τ₁) 
-
--- weakening {Γ} {x} {y} {τ₁} {τ₂} fresh lookupY with y ≡ᵇ x in eq
--- ... | false = lookupY
--- ... | true = let y≡x = ≡ᵇ⇒≡ y x (subst T (sym eq) tt)
---                  lookup-X-just = subst (λ z → lookup z Γ ≡ just τ₁) y≡x lookupY
---                  lookup-X-nothing = fresh-nothing Γ x fresh
---                  just-is-nothing = (trans (sym lookup-X-just) lookup-X-nothing)
---              in  case just-is-nothing of (λ ())
-
-
 -- Postulate for the lambda case (requires generalized substitution)
-
-
-
 
 ≢ᵇ⇒≢ : ∀ {m i} → (m ≡ᵇ i) ≡ false → m ≢ i
 ≢ᵇ⇒≢ {m} {i} p refl = subst T p (≡⇒≡ᵇ m m refl)
@@ -67,6 +44,7 @@ open import SystemF.Semantics
 τ-weakening {Γ₁} {Γ₂} (τ-inl τ₁)        = τ-inl (τ-weakening {Γ₁} {Γ₂} τ₁)
 τ-weakening {Γ₁} {Γ₂} (τ-inr τ2)        = τ-inr (τ-weakening {Γ₁} {Γ₂} τ2)
 τ-weakening {Γ₁} {Γ₂} (τ-var lookupN)   = τ-var (lookup-concat  {Γ₁} {Γ₂} lookupN)
+τ-weakening {Γ₁} {Γ₂} (τ-case e τₗ τᵣ)  = {!   !}
 τ-weakening {Γ₁} {Γ₂} {e} {τ₁} (τ-lam {Γ} {τ₃} {τ₄} {e'} bodyTy) = 
     let aa = concat-append {Γ₁} {Γ₂} {τ₃}
         bb = τ-weakening {Γ₁} {Γ , τ₃} bodyTy
@@ -92,6 +70,7 @@ subst-τ |Γ|≡i (τ-snd τ₁×₂) vTy      = τ-snd (subst-τ |Γ|≡i τ₁
 subst-τ |Γ|≡i (τ-app fTy eTy) vTy   = τ-app (subst-τ |Γ|≡i fTy vTy) (subst-τ |Γ|≡i eTy vTy)
 subst-τ |Γ|≡i (τ-inl τ₁) vTy        = τ-inl (subst-τ |Γ|≡i τ₁ vTy)
 subst-τ |Γ|≡i (τ-inr τ₂) vTy        = τ-inr (subst-τ |Γ|≡i τ₂ vTy)
+subst-τ |Γ|≡i (τ-case e τₗ τᵣ) vTy  = {!   !}
 subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-var {Γ'} {m} lookupN) vTy with m ≡ᵇ i in eq
 ... | true  = 
     let m≡i = ≡ᵇ⇒≡ m i (subst T (sym eq) tt)

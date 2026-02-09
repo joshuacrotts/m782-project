@@ -165,3 +165,18 @@ data _↦_ : Term → Term → Set where
     -- -----------------------------
     -- inr e ↦ inr e'
     ss-inr-step : ∀ {e e'} → (e ↦ e') → (Inr e ↦ Inr e')
+
+    -- e ↦ e'
+    -- ----------------------------------------------------------
+    -- case e [inl x ⇒ eₗ | inr y ⇒ eᵣ] ↦ case e' [inl x ⇒ eₗ | inr y ⇒ eᵣ]
+    ss-case-step : ∀ {e e' eₗ eᵣ} → (e ↦ e') → (Case e eₗ eᵣ ↦ Case e' eₗ eᵣ)
+
+    -- v val
+    -- ----------------------------------------------------------
+    -- case v [inl x ⇒ eₗ | inr y ⇒ eᵣ] ↦ eₗ [v / x]
+    ss-case-inl : ∀ {v eₗ eᵣ τₗ} → Valτ τₗ v → Case (Inl v) eₗ eᵣ ↦ eₗ [ v ]
+
+    -- v val
+    -- ----------------------------------------------------------
+    -- case v [inl x ⇒ eₗ | inr y ⇒ eᵣ] ↦ eᵣ [v / y]
+    ss-case-inr : ∀ {v eₗ eᵣ τᵣ} → Valτ τᵣ v → Case (Inr v) eₗ eᵣ ↦ eᵣ [ v ]
