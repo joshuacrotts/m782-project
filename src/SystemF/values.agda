@@ -8,13 +8,13 @@ open import SystemF.Types
  - produce a type. 
  - For example, vτ-true is a proof that true is a value of type 𝔹. -}
 data Valτ : τ → Term → Set where
-  vτ-true  : Valτ Bool true
-  vτ-false : Valτ Bool false
+  vτ-true  : Valτ Bool True
+  vτ-false : Valτ Bool False
 
-  vτ-zero  : Valτ Nat zero
-  vτ-suc   : ∀ {v} → Valτ Nat v → Valτ Nat (suc v)
+  vτ-zero  : Valτ Nat Zero
+  vτ-suc   : ∀ {v} → Valτ Nat v → Valτ Nat (Suc v)
 
-  vτ-cons  : ∀ {τ1 τ2 v1 v2} → Valτ τ1 v1 → Valτ τ2 v2 → Valτ (τ1 × τ2) (cons v1 v2)
+  vτ-cons  : ∀ {τ1 τ2 v1 v2} → Valτ τ1 v1 → Valτ τ2 v2 → Valτ (τ1 × τ2) (Cons v1 v2)
 
-  vτ-lam   : ∀ {τ1 τ2 body} → Valτ (τ1 ⇒ τ2) (lam body)
+  vτ-lam   : ∀ {τ1 τ2 body} → Valτ (τ1 ⇒ τ2) (Lam body)
   
