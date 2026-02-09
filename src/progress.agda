@@ -85,6 +85,6 @@ progress (τ-lam _) = inj₁ (vτ-lam)
 -- app case
 progress (τ-app {f = f} {e = e} {τ1 = τ1} {τ2 = τ2} tf te) with progress tf 
 ... | inj₂ (f' , stepf) = inj₂ (App f' e , ss-app-func stepf)                                     -- if f steps then app f e steps to app f' e
-... | inj₁ (vτ-lam) with progress te
-...     | inj₁ ve               = {!   !}
+... | inj₁ (vτ-lam {body = body}) with progress te
+...     | inj₁ ve               = inj₂ (body [ e ] , ss-app-beta ve)                 -- if f is a value lam and e is a value, then app f e steps by beta reduction
 ...     | inj₂ (e' , stepe)     = inj₂ (App f e' , ss-app-arg stepe)                             -- if e steps then app f e steps to app f e'
