@@ -27,6 +27,13 @@ _∷_ τ (Γ , τ') = (τ ∷ Γ) , τ'
 
 
 
+infixr 4 _++_
+_++_ : Context → Context → Context
+_++_ ∘ Γ  = Γ
+_++_ (Γ₁ , τ) Γ₂  = Γ₁ ++ (τ ∷ Γ₂ )
+
+
+
 lookup : ℕ → Context → Maybe τ
 lookup _ ∘             = nothing 
 lookup zero (Γ , τ)    = just τ
@@ -39,6 +46,11 @@ size (Γ , τ) = suc (size Γ)
 
 ∷assoc : ∀ {Γ τ₁ τ₂} → ((τ₁ ∷ Γ) , τ₂) ≡ (τ₁ ∷ (Γ , τ₂))
 ∷assoc {Γ} {τ₁} {τ₂} = refl
+
+-- ++assoc : ∀ {Γ τ} → (Γ ++ (∘ , τ)) ≡ (Γ , τ)
+-- ++assoc {Γ} with Γ
+-- ... | ∘ = refl
+-- ... | (Γ' , τ') = {!   !}
 
 
 lookup-size : ∀ {Γ n τ} → lookup n Γ ≡ just τ → n < size Γ 
@@ -75,3 +87,21 @@ size-head {Γ} {τ₁} with Γ
 ... | (Γ' , τ₂) = cong suc (size-head {Γ'} {τ₁})
 
 
+
+lookup-concat : ∀ {Γ₁ Γ₂ n τ₁} → lookup n Γ₂ ≡ just τ₁ → lookup n (Γ₁ ++ Γ₂) ≡ just τ₁
+lookup-concat {Γ₁} {Γ₂} {n} {τ₁} lookupN with Γ₁ 
+... | ∘  = lookupN
+... | (Γ₃ , τ₂) =
+    let Γ₄ = τ₂ ∷ Γ₂ 
+        n<|Γ₂| = lookup-size {Γ₂} {n} {τ₁} lookupN
+        Γ₄[n]≡Γ₂[n] = lookup-rest {Γ₂} {τ₂} n<|Γ₂|
+        Γ₄[n]≡τ₁ = trans Γ₄[n]≡Γ₂[n] lookupN
+    in lookup-concat {Γ₃} {Γ₄} {n} {τ₁} Γ₄[n]≡τ₁
+
+concat-append : ∀ {Γ₁ Γ₂ τ₁} → (Γ₁ ++ (Γ₂ , τ₁)) ≡ ((Γ₁ ++ Γ₂) , τ₁)
+concat-append {∘} = refl
+concat-append {Γ₁ , τ₂} {Γ₂} {τ₁} = concat-append {Γ₁} {τ₂ ∷ Γ₂} {τ₁}
+
+concat-id : ∀ (Γ) →  (Γ ++ ∘) ≡ Γ
+concat-id ∘ = refl
+concat-id (Γ , τ) = trans (concat-append {Γ} {∘} {τ}) (cong (_, τ) (concat-id Γ))

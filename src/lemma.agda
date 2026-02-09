@@ -52,7 +52,23 @@ open import SystemF.Semantics
 <suc⇒≤ {m} {i} m<sucI = ≤-pred m<sucI
 
 
-postulate τ-weakening : ∀ {Γ e τ}  → (∘ ⊢ e ⦂ τ) → (Γ ⊢ e ⦂ τ)
+τ-weakening : ∀ {Γ₁ Γ₂ e τ}  → (Γ₂ ⊢ e ⦂ τ) → ((Γ₁ ++ Γ₂) ⊢ e ⦂ τ)
+τ-weakening τ-true = τ-true
+τ-weakening τ-false = τ-false
+τ-weakening τ-zero = τ-zero
+τ-weakening {Γ₁} {Γ₂} (τ-suc τ₁) = τ-suc (τ-weakening {Γ₁} {Γ₂} τ₁)
+τ-weakening {Γ₁} {Γ₂} (τ-pred τ₁) = τ-pred (τ-weakening {Γ₁} {Γ₂} τ₁)
+τ-weakening {Γ₁} {Γ₂} (τ-zero? τ₁) = τ-zero? (τ-weakening {Γ₁} {Γ₂} τ₁)
+τ-weakening {Γ₁} {Γ₂} (τ-if τ₁ τ₂ τ₃) = τ-if (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂) (τ-weakening {Γ₁} {Γ₂} τ₃)
+τ-weakening {Γ₁} {Γ₂} (τ-cons τ₁ τ₂) = τ-cons (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂)
+τ-weakening {Γ₁} {Γ₂} (τ-fst τ₁×₂) = τ-fst (τ-weakening {Γ₁} {Γ₂} τ₁×₂)
+τ-weakening {Γ₁} {Γ₂} (τ-snd τ₁×₂) = τ-snd (τ-weakening {Γ₁} {Γ₂} τ₁×₂)
+τ-weakening {Γ₁} {Γ₂} (τ-app fTy eTy) = τ-app (τ-weakening {Γ₁} {Γ₂} fTy) (τ-weakening {Γ₁} {Γ₂} eTy)
+τ-weakening {Γ₁} {Γ₂} (τ-var lookupN) = τ-var (lookup-concat  {Γ₁} {Γ₂} lookupN)
+τ-weakening {Γ₁} {Γ₂} {e} {τ₁} (τ-lam {Γ} {τ₃} {τ₄} {e'} bodyTy) = 
+    let aa = concat-append {Γ₁} {Γ₂} {τ₃}
+        bb = τ-weakening {Γ₁} {Γ , τ₃} bodyTy
+    in τ-lam (subst (λ z → z ⊢ e' ⦂ τ₄) aa bb)
 
 
 
@@ -78,8 +94,8 @@ subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-var {Γ'} {m} lookupN)
         lookupI1 = lookup-head {Γ} {τ₁} {i} |Γ|≡i
         lookupI2 = subst (λ z → lookup z (τ₁ ∷ Γ) ≡ just τ₂)  m≡i lookupN 
         τ₁≡τ₂ = just-injective (trans (sym lookupI1) lookupI2)
-        ΓvTy = τ-weakening {Γ} vTy
-    in subst (λ z → Γ ⊢ v ⦂ z) τ₁≡τ₂  ΓvTy
+        ΓvTy =  subst (λ z → z ⊢ v ⦂ τ₁) (concat-id Γ) (τ-weakening {Γ} {∘} vTy)
+    in subst (λ z → Γ ⊢ v ⦂ z) τ₁≡τ₂ ΓvTy
 ... | false =
     let m<|Γ'| = (lookup-size {Γ'} {m} lookupN)
         m≤|Γ| = <suc⇒≤ (subst (λ z → m < z) (size-head {Γ} {τ₁}) m<|Γ'|)
