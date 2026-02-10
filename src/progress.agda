@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 module Progress where
 
 import SystemF.Context as C
@@ -99,3 +101,6 @@ progress (τ-inl {τ1 = τ1} {τ2 = τ2} τ₁) with progress τ₁
 progress (τ-inr {τ1 = τ1} {τ2 = τ2} τ₂) with progress τ₂
 ... | inj₁ v              = inj₁ (vτ-inr v)
 ... | inj₂ (e' , step)    = inj₂ (Inr e' , ss-inr-step step)
+
+-- case case
+progress (τ-case τₑ τₗ τᵣ) = {!   !}

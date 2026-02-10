@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 module Preservation where
 
 open import SystemF.Types
@@ -57,3 +59,7 @@ preservation (τ-inl τ₁) (ss-inl-step step)                  = τ-inl (preser
 -- inr: steps
 preservation (τ-inr τ₂) (ss-inr-step step)                  = τ-inr (preservation τ₂ step)
 
+-- case: steps
+preservation (τ-case τₑ τₗ τᵣ) (ss-case-step step)          = τ-case (preservation τₑ step) τₗ τᵣ
+preservation (τ-case τₑ τₗ τᵣ) (ss-case-inl v)              = subst0-τ {!   !} {!   !}
+preservation (τ-case τₑ τₗ τᵣ) (ss-case-inr v)              = subst0-τ {!   !} {!   !}

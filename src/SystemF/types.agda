@@ -1,5 +1,8 @@
 module SystemF.Types where
 
+infixr 6 _⇒_
+infixr 7 _×_
+
 --
 -- Types for now are booleans and natural numbers.
 -- 
