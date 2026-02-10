@@ -103,4 +103,7 @@ progress (τ-inr {τ1 = τ1} {τ2 = τ2} τ₂) with progress τ₂
 ... | inj₂ (e' , step)    = inj₂ (Inr e' , ss-inr-step step)
 
 -- case case
-progress (τ-case τₑ τₗ τᵣ) = {!   !}
+progress (τ-case {e = e} {eₗ = eₗ} {eᵣ = eᵣ} {τₗ = τₗ} {τᵣ = τᵣ} τₑ τₗTy τᵣTy) with progress τₑ
+... | inj₂ ( e' , step ) = inj₂ (Case e' eₗ eᵣ , ss-case-step step)
+... | inj₁ (vτ-inl {v = v} vVal) = inj₂ (eₗ [ v ] , ss-case-inl vVal)
+... | inj₁ (vτ-inr {v = v} vVal) = inj₂ (eᵣ [ v ] , ss-case-inr vVal)
