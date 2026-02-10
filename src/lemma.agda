@@ -42,7 +42,7 @@ open import SystemF.Semantics
 τ-weakening {Γ₁} {Γ₂} (τ-snd τ₁×₂)      = τ-snd (τ-weakening {Γ₁} {Γ₂} τ₁×₂)
 τ-weakening {Γ₁} {Γ₂} (τ-app fTy eTy)   = τ-app (τ-weakening {Γ₁} {Γ₂} fTy) (τ-weakening {Γ₁} {Γ₂} eTy)
 τ-weakening {Γ₁} {Γ₂} (τ-inl τ₁)        = τ-inl (τ-weakening {Γ₁} {Γ₂} τ₁)
-τ-weakening {Γ₁} {Γ₂} (τ-inr τ2)        = τ-inr (τ-weakening {Γ₁} {Γ₂} τ2)
+τ-weakening {Γ₁} {Γ₂} (τ-inr τ2)        = τ-inr (τ-weakening {Γ₁}{ Γ₂} τ2)
 τ-weakening {Γ₁} {Γ₂} (τ-var lookupN)   = τ-var (lookup-concat  {Γ₁} {Γ₂} lookupN)
 τ-weakening {Γ₁} {Γ₂} (τ-case e τₗ τᵣ)  = {!   !}
 τ-weakening {Γ₁} {Γ₂} {e} {τ₁} (τ-lam {Γ} {τ₃} {τ₄} {e'} bodyTy) = 

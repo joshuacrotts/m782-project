@@ -29,6 +29,9 @@ eval {e = e} te (suc n) with progress te
 t : Term
 t = (App (Lam (Cons (Var 0) (Var 0))) Zero)
 
+-- ((lambda (x) (cons x x)) zero)
+-- (cons zero zero)
+
 tTy : ∘ ⊢ t ⦂ Nat × Nat
 tTy = (τ-app (τ-lam (τ-cons (τ-var refl) (τ-var refl))) τ-zero)
 

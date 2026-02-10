@@ -22,7 +22,6 @@ open import SystemF.Values
 -- x is the de Bruijn index of the variable to be substituted
 -- When substituting at index n:
 --   - Var m where m = n  →  s (substitute)
---   - Var m where m > n  →  Var (m-1) (decrement, binder removed)
 --   - Var m where m < n  →  Var m (unchanged, bound by outer binder)
 
 β : Term → Term → ℕ → Term
