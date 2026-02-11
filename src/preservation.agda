@@ -61,5 +61,5 @@ preservation (τ-inr τ₂) (ss-inr-step step)                  = τ-inr (preser
 
 -- case: steps
 preservation (τ-case τₑ τₗ τᵣ) (ss-case-step step)          = τ-case (preservation τₑ step) τₗ τᵣ
-preservation (τ-case τₑ τₗ τᵣ) (ss-case-inl v)              = subst0-τ {!   !} {!   !}
-preservation (τ-case τₑ τₗ τᵣ) (ss-case-inr v)              = subst0-τ {!   !} {!   !}
+preservation (τ-case τₑ τₗ τᵣ) (ss-case-inl v)              = subst0-τ-inl τₗ τₑ
+preservation (τ-case τₑ τₗ τᵣ) (ss-case-inr v)              = subst0-τ-inr τᵣ τₑ

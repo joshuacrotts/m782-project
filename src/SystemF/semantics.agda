@@ -23,6 +23,17 @@ open import SystemF.Values
 -- When substituting at index n:
 --   - Var m where m = n  →  s (substitute)
 --   - Var m where m < n  →  Var m (unchanged, bound by outer binder)
+-- 
+-- β (Case sum left right) s n = Case (β sum s n) (β left s (suc n)) (β right s (suc n))
+-- The behavior of Case is
+-- (1) evaluate the sum expression
+-- (2) if the result matches the inl case, substitute the value into the left branch
+-- (3) if the result matches the inr case, substitute the value into the right branch
+-- The sum expression corresponds to the function argument,
+-- while the two branches correspond to the function body. 
+-- This means Case expression introduces one more binder for the two branches, 
+-- but not for the sum expression.
+-- Hence, we only increment the index for the left and right branches, but not for the sum expression.
 
 β : Term → Term → ℕ → Term
 β (Var m) s n with m ≡ᵇ n 
@@ -42,7 +53,7 @@ open import SystemF.Values
 β (Snd t) s n               = Snd (β t s n)
 β (Inl t) s n               = Inl (β t s n)
 β (Inr t) s n               = Inr (β t s n)
-β (Case sum left right) s n = Case (β sum s n) (β left s n) (β right s n)
+β (Case sum left right) s n = Case (β sum s n) (β left s (suc n)) (β right s (suc n))
 
 infixl 5 _[_]
 

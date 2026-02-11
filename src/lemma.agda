@@ -70,7 +70,6 @@ subst-τ |Γ|≡i (τ-snd τ₁×₂) vTy      = τ-snd (subst-τ |Γ|≡i τ₁
 subst-τ |Γ|≡i (τ-app fTy eTy) vTy   = τ-app (subst-τ |Γ|≡i fTy vTy) (subst-τ |Γ|≡i eTy vTy)
 subst-τ |Γ|≡i (τ-inl τ₁) vTy        = τ-inl (subst-τ |Γ|≡i τ₁ vTy)
 subst-τ |Γ|≡i (τ-inr τ₂) vTy        = τ-inr (subst-τ |Γ|≡i τ₂ vTy)
-subst-τ |Γ|≡i (τ-case e τₗ τᵣ) vTy  = {!   !}
 subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-var {Γ'} {m} lookupN) vTy with m ≡ᵇ i in eq
 ... | true  = 
     let m≡i = ≡ᵇ⇒≡ m i (subst T (sym eq) tt)
@@ -88,6 +87,11 @@ subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-var {Γ'} {m} lookupN)
     in τ-var (trans (sym lookup-Γ-m) lookupN)
 subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-lam {Γ'} {τ₃} {τ₄} bodyTy) vTy  = 
     τ-lam  (subst-τ (cong suc |Γ|≡i) bodyTy vTy)
+subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-case cTy lTy rTy) vTy  = 
+    let cTy' = subst-τ |Γ|≡i cTy vTy
+        lTy' = subst-τ (cong suc |Γ|≡i) lTy vTy
+        rTy' = subst-τ (cong suc |Γ|≡i) rTy vTy
+    in τ-case cTy' lTy' rTy'
     
 
 subst0-τ : ∀ {τ₁ τ₂ body v} →
@@ -96,3 +100,18 @@ subst0-τ : ∀ {τ₁ τ₂ body v} →
             (∘ ⊢ body [ v ] ⦂ τ₂)
 subst0-τ bodyTy vTy  = subst-τ refl bodyTy vTy
 
+
+subst0-τ-inl : ∀ {τ₁ τ₂ τ₃ body v} →
+            (∘ , τ₁ ⊢ body ⦂ τ₃) →
+            (∘ ⊢ (Inl v) ⦂ τ₁ + τ₂) →
+            (∘ ⊢ body [ v ] ⦂ τ₃)
+subst0-τ-inl bodyTy vTy with vTy
+... | τ-inl vTy' = subst0-τ bodyTy vTy' 
+
+
+subst0-τ-inr : ∀ {τ₁ τ₂ τ₃ body v} →
+            (∘ , τ₂ ⊢ body ⦂ τ₃) →
+            (∘ ⊢ (Inr v) ⦂ τ₁ + τ₂) →
+            (∘ ⊢ body [ v ] ⦂ τ₃)
+subst0-τ-inr bodyTy vTy with vTy
+... | τ-inr vTy' = subst0-τ bodyTy vTy' 
