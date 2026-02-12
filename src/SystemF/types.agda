@@ -1,4 +1,4 @@
-module SystemF.Types where
+module SystemF.types where
 
 infixr 6 _⇒_
 infixr 7 _×_

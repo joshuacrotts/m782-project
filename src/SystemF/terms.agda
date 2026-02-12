@@ -1,8 +1,9 @@
+module SystemF.terms where
+
 open import Data.Nat using (ℕ)
-open import SystemF.Types
 
+open import SystemF.types
 
-module SystemF.Terms where
 
 --
 -- Terms for now are booleans and natural numbers.

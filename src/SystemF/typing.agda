@@ -1,11 +1,13 @@
-module SystemF.Typing where
+module SystemF.typing where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Maybe using (Maybe; just; nothing)
 open import Data.Bool using (true; false)
-open import SystemF.Terms
-open import SystemF.Types
-open import SystemF.Context
+
+open import SystemF.terms
+open import SystemF.types
+open import SystemF.context
+
 
 -- Typing judgments--
 

@@ -1,14 +1,14 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module Preservation where
+module preservation where
 
-open import SystemF.Types
-open import SystemF.Terms
-open import SystemF.Values
-open import SystemF.Context
-open import SystemF.Typing
-open import SystemF.Semantics
-open import Lemma
+open import SystemF.types
+open import SystemF.terms
+open import SystemF.values
+open import SystemF.context
+open import SystemF.typing
+open import SystemF.semantics
+open import lemma
 
 -- Preservation theorem
 -- If ∘ ⊢ e ⦂ τ and e ↦ e' then ∘ ⊢ e' ⦂ τ

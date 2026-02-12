@@ -1,6 +1,6 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module Lemma where
+module lemma where
 
 open import Data.Maybe using (Maybe; just; nothing)
 open import Data.Maybe.Properties using (just-injective)
@@ -12,12 +12,13 @@ open import Data.Unit using (tt)
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; subst; trans; sym; cong)
 open import Function using (case_of_)
 open import Data.Empty using (⊥; ⊥-elim)
-open import SystemF.Types
-open import SystemF.Terms
-open import SystemF.Values
-open import SystemF.Context
-open import SystemF.Typing
-open import SystemF.Semantics
+
+open import SystemF.types
+open import SystemF.terms
+open import SystemF.values
+open import SystemF.context
+open import SystemF.typing
+open import SystemF.semantics
 
 
 -- Postulate for the lambda case (requires generalized substitution)

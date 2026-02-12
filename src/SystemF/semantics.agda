@@ -1,4 +1,4 @@
-module SystemF.Semantics where
+module SystemF.semantics where
 
 ------------------------------------------------------------------------
 -- Small-step semantics
@@ -7,15 +7,14 @@ module SystemF.Semantics where
 open import Data.Bool using (true; false)
 open import Data.Nat using (ℕ; zero; suc; pred; _>_; _≡ᵇ_; _<ᵇ_)
 open import Function.Base using (case_of_)
-open import SystemF.Types
-open import SystemF.Terms
-open import SystemF.Values
+
+open import SystemF.types
+open import SystemF.terms
+open import SystemF.values
 
 ------------------------------------------------------------------------
 -- Substitution
 ------------------------------------------------------------------------
-
-
 
 -- subst : body [v / x] -> body'
 -- subst : body -> v -> x -> body'

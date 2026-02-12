@@ -1,3 +1,4 @@
+module SystemF.context where
 
 open import Data.Maybe using (Maybe; just; nothing)
 open import Data.Nat using (ℕ; zero; suc; _≤_; _<_; z<s; s<s; s≤s)
@@ -5,10 +6,10 @@ open import Data.Nat.Properties using (≤-pred)
 open import Data.Bool using (true; false) renaming (Bool to 𝔹)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; trans; sym; cong)
 open import Function using (case_of_)
-open import SystemF.Types
-open import SystemF.Terms
 
-module SystemF.Context where
+open import SystemF.types
+open import SystemF.terms
+
 
 --
 -- Term Context for typing.

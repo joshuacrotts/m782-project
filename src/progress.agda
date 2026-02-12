@@ -1,21 +1,20 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module Progress where
-
-import SystemF.Context as C
-open C using (Context; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
-
-open import SystemF.Types
-open import SystemF.Terms
-open import SystemF.Values
-open import SystemF.Typing
-open import SystemF.Semantics
+module progress where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Data.Product using (Σ; Σ-syntax; _,_)
 open import Data.Empty using (⊥; ⊥-elim)
 
+open import SystemF.types
+open import SystemF.terms
+open import SystemF.values
+open import SystemF.typing
+open import SystemF.semantics
+
+import SystemF.context as C
+open C using (Context; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
 
 -- Progress theorem
 -- If ∘ ⊢ e ⦂ τ then either e Val or e steps to e'.
@@ -103,7 +102,7 @@ progress (τ-inr {τ1 = τ1} {τ2 = τ2} τ₂) with progress τ₂
 ... | inj₂ (e' , step)    = inj₂ (Inr e' , ss-inr-step step)
 
 -- case case
-progress (τ-case {e = e} {eₗ = eₗ} {eᵣ = eᵣ} {τₗ = τₗ} {τᵣ = τᵣ} τₑ τₗTy τᵣTy) with progress τₑ
+progress (τ-case {e = e} {eₗ = eₗ} {eᵣ = eᵣ} τₑ τₗTy τᵣTy) with progress τₑ
 ... | inj₂ ( e' , step ) = inj₂ (Case e' eₗ eᵣ , ss-case-step step)
 ... | inj₁ (vτ-inl {v = v} vVal) = inj₂ (eₗ [ v ] , ss-case-inl vVal)
 ... | inj₁ (vτ-inr {v = v} vVal) = inj₂ (eᵣ [ v ] , ss-case-inr vVal)
