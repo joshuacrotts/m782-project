@@ -45,7 +45,14 @@ open import SystemF.semantics
 τ-weakening {Γ₁} {Γ₂} (τ-inl τ₁)        = τ-inl (τ-weakening {Γ₁} {Γ₂} τ₁)
 τ-weakening {Γ₁} {Γ₂} (τ-inr τ2)        = τ-inr (τ-weakening {Γ₁}{ Γ₂} τ2)
 τ-weakening {Γ₁} {Γ₂} (τ-var lookupN)   = τ-var (lookup-concat  {Γ₁} {Γ₂} lookupN)
-τ-weakening {Γ₁} {Γ₂} (τ-case e τₗ τᵣ)  = {!   !}
+τ-weakening {Γ₁} {Γ₂} {e} {τ₃} (τ-case {Γ₂} {leftTy} {rightTy} {τ₃} {τₑ} {el} {er} e' τ₁ τ₂) =
+                                             let left   = concat-append {Γ₁} {Γ₂} {leftTy} in
+                                             let right  = concat-append {Γ₁} {Γ₂} {rightTy} in
+                                             let leftW  = (τ-weakening {Γ₁} {Γ₂ , leftTy} τ₁) in
+                                             let rightW = (τ-weakening {Γ₁} {Γ₂ , rightTy} τ₂) in
+                                          τ-case (τ-weakening {Γ₁} {Γ₂} e')
+                                                 (subst (λ z → z ⊢ el ⦂ τ₃) left leftW)
+                                                 (subst (λ z → z ⊢ er ⦂ τ₃) right rightW)
 τ-weakening {Γ₁} {Γ₂} {e} {τ₁} (τ-lam {Γ} {τ₃} {τ₄} {e'} bodyTy) = 
     let aa = concat-append {Γ₁} {Γ₂} {τ₃}
         bb = τ-weakening {Γ₁} {Γ , τ₃} bodyTy
