@@ -27,14 +27,29 @@ eval {e = e} te (suc n) with progress te
 
 
 t : Term
-t = (App (Lam (Cons (Var 0) (Var 0))) Zero)
+t = (Snd (App (Lam (Cons (Var 0) (Var 0))) Zero))
 
 -- ((lambda (x) (cons x x)) zero)
 -- (cons zero zero)
 
-tTy : ∘ ⊢ t ⦂ Nat × Nat
-tTy = (τ-app (τ-lam (τ-cons (τ-var refl) (τ-var refl))) τ-zero)
+tTy : ∘ ⊢ t ⦂ Nat
+tTy = (τ-snd (τ-app (τ-lam (τ-cons (τ-var refl) (τ-var refl))) τ-zero))
 
 -- now you can run:
 test : Maybe Term
 test = eval tTy 200
+
+t2 : Term
+t2 = Case (Inr (Suc Zero))
+          (Suc Zero)
+          Zero
+
+t2Ty : ∘ ⊢ t2 ⦂ Nat
+t2Ty =
+  τ-case
+    (τ-inr {τ1 = Nat} {τ2 = Nat} (τ-suc τ-zero))
+    (τ-suc τ-zero)
+    τ-zero
+
+eval2 : Maybe Term
+eval2 = eval t2Ty 200
