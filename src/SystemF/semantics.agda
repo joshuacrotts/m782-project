@@ -73,17 +73,21 @@ data _↦_ : Term → Term → Set where
     --           v Valτ Nat
     -- -------------------------------
     --      Zero?(Suc(v)) ↦ False
-    ss-zero?-suc : ∀ {v} → Valτ Nat v → Zero?(Suc(v)) ↦ False
+    ss-zero?-suc : ∀ {v} → 
+              Valτ Nat v → 
+              (Zero?(Suc(v)) ↦ False)
 
     -- 
     -- -------------------------------
     --       If True e2 e3 ↦ e2
-    ss-if-true : ∀ {e2 e3} → If True e2 e3 ↦ e2
+    ss-if-true : ∀ {e2 e3} → 
+                (If True e2 e3 ↦ e2)
 
     -- 
     -- -------------------------------
     --       If False e2 e3 ↦ e3
-    ss-if-false : ∀ {e2 e3} → If False e2 e3 ↦ e3
+    ss-if-false : ∀ {e2 e3} → 
+                 (If False e2 e3 ↦ e3)
 
     --          
     -- -------------------------------
@@ -93,17 +97,25 @@ data _↦_ : Term → Term → Set where
     --           v Valτ Nat
     -- -------------------------------
     --      pred(Suc(v)) ↦ v
-    ss-pred-suc : ∀ {v} → Valτ Nat v → Pred (Suc(v)) ↦ v
+    ss-pred-suc : ∀ {v} → 
+             Valτ Nat v → 
+             (Pred (Suc(v)) ↦ v)
 
     --   v1 Valτ τ1    v2 Valτ τ2
     -- -----------------------------
     --  fst (cons v1 v2) ↦ v1
-    ss-fst : ∀ {τ1 τ2 v1 v2} → Valτ τ1 v1 → Valτ τ2 v2 → Fst (Cons v1 v2) ↦ v1
+    ss-fst : ∀ {τ1 τ2 v1 v2} → 
+                  Valτ τ1 v1 → 
+                  Valτ τ2 v2 →
+                  Fst (Cons v1 v2) ↦ v1
 
     --   v1 Valτ τ1    v2 Valτ τ2
     -- -----------------------------
     --  snd (cons v1 v2) ↦ v2
-    ss-snd : ∀ {τ1 τ2 v1 v2} → Valτ τ1 v1 → Valτ τ2 v2 → Snd (Cons v1 v2) ↦ v2
+    ss-snd : ∀ {τ1 τ2 v1 v2} → 
+                  Valτ τ1 v1 → 
+                  Valτ τ2 v2 →
+                  Snd (Cons v1 v2) ↦ v2
 
 
     ---------- Congruence rules ----------
@@ -111,85 +123,119 @@ data _↦_ : Term → Term → Set where
     --           e1 ↦ e1'
     -- -------------------------------
     --   if e1 e2 e3 ↦ if e1' e2 e3
-    ss-if-step : ∀ {e1 e1' e2 e3} → (e1 ↦ e1') → (If e1 e2 e3 ↦ If e1' e2 e3)
+    ss-if-step : ∀ {e1 e1' e2 e3} → 
+                       (e1 ↦ e1') → 
+                       (If e1 e2 e3 ↦ If e1' e2 e3)
 
     --           e ↦ e'
     -- -------------------------------
     --     suc(e) ↦ suc(e')
-    ss-suc-step : ∀ {e e'} → (e ↦ e') → (Suc e ↦ Suc e')
+    ss-suc-step : ∀ {e e'} → 
+                  (e ↦ e') → 
+                  (Suc e ↦ Suc e')
 
     --           e ↦ e'
     -- -------------------------------
     --     zero?(e) ↦ zero(e')
-    ss-zero?-step : ∀ {e e'} → (e ↦ e') → (Zero? e ↦ Zero? e')
+    ss-zero?-step : ∀ {e e'} → 
+                    (e ↦ e') → 
+                    (Zero? e ↦ Zero? e')
 
     --           e ↦ e'
     -- -------------------------------
     --    pred(e) ↦ pred(e')
-    ss-pred-step : ∀ {e e'} → (e ↦ e') → (Pred e ↦ Pred e')
+    ss-pred-step : ∀ {e e'} → 
+                   (e ↦ e') → 
+                   (Pred e ↦ Pred e')
 
     --   e₁ ↦ e₁' 
     -- -----------------------------
     --   cons e₁ e₂ ↦ cons e₁' e₂
-    ss-cons-left-step : ∀ {e₁ e₁' e₂} → (e₁ ↦ e₁') → (Cons e₁ e₂ ↦ Cons e₁' e₂)
+    ss-cons-left-step : ∀ {e₁ e₁' e₂} → 
+                           (e₁ ↦ e₁') → 
+                           (Cons e₁ e₂ ↦ Cons e₁' e₂)
 
 
     --   v val            e₂ ↦ e₂'
     -- -----------------------------
     --   cons e₁ e₂ ↦ cons e₁' e₂
-    ss-cons-right-step :   ∀ {τ v e₂ e₂'} → Valτ τ v → (e₂ ↦ e₂') → Cons v e₂ ↦ Cons v e₂'
+    ss-cons-right-step :   ∀ {τ v e₂ e₂'} → 
+                                 Valτ τ v → 
+                               (e₂ ↦ e₂') → 
+                               (Cons v e₂ ↦ Cons v e₂')
 
     --   e ↦ e'
     -- ----------------------------
     --     fst e ↦ fst e'
-    ss-fst-step : ∀ {e e'} → (e ↦ e') → (Fst e ↦ Fst e')
+    ss-fst-step : ∀ {e e'} → 
+                  (e ↦ e') → 
+                  (Fst e ↦ Fst e')
 
     --  e ↦ e'
     -- ---------------------
     --     snd e ↦ snd e'
-    ss-snd-step : ∀ {e e'} → (e ↦ e') → (Snd e ↦ Snd e')
+    ss-snd-step : ∀ {e e'} → 
+                  (e ↦ e') → 
+                  (Snd e ↦ Snd e')
 
     --   f ↦ f'
     -- ----------------------------
     --   app f e ↦ app f' e
-    ss-app-func : ∀ {f f' e} → (f ↦ f') → (App f e ↦ App f' e)
+    ss-app-func : ∀ {f f' e} → 
+                    (f ↦ f') → 
+                    (App f e ↦ App f' e)
 
     --   e ↦ e'
     -- ----------------------------
     --   app f e ↦ app f e'
-    ss-app-arg : ∀ {f e e'} → (e ↦ e') → (App f e ↦ App f e')
+    ss-app-arg : ∀ {f e e'} → 
+                   (e ↦ e') → 
+                   (App f e ↦ App f e')
 
     -- --   v1 val
     -- -- ----------------------------
     -- -- app (lam body) v1 ↦ body [v1 / x]
-    ss-app-beta : ∀ {body v1 τ1} → Valτ τ1 v1 → App (Lam body) v1 ↦ body [ v1 ]
+    ss-app-beta : ∀ {body v1 τ1} → 
+                      Valτ τ1 v1 → 
+                      (App (Lam body) v1 ↦ body [ v1 ])
 
     --  e ↦ e'
     -- -----------------------------
     -- inl e ↦ inl e'
-    ss-inl-step : ∀ {e e'} → (e ↦ e') → (Inl e ↦ Inl e')
+    ss-inl-step : ∀ {e e'} → 
+                  (e ↦ e') → 
+                  (Inl e ↦ Inl e')
 
     --  e ↦ e'
     -- -----------------------------
     -- inr e ↦ inr e'
-    ss-inr-step : ∀ {e e'} → (e ↦ e') → (Inr e ↦ Inr e')
+    ss-inr-step : ∀ {e e'} → 
+                  (e ↦ e') → 
+                  (Inr e ↦ Inr e')
 
     -- e ↦ e'
     -- ----------------------------------------------------------
     -- case e [inl x ⇒ eₗ | inr y ⇒ eᵣ] ↦ case e' [inl x ⇒ eₗ | inr y ⇒ eᵣ]
-    ss-case-step : ∀ {e e' eₗ eᵣ} → (e ↦ e') → (Case e eₗ eᵣ ↦ Case e' eₗ eᵣ)
+    ss-case-step : ∀ {e e' eₗ eᵣ} → 
+                         (e ↦ e') → 
+                         (Case e eₗ eᵣ ↦ Case e' eₗ eᵣ)
 
     -- v val
     -- ----------------------------------------------------------
     -- case v [inl x ⇒ eₗ | inr y ⇒ eᵣ] ↦ eₗ [v / x]
-    ss-case-inl : ∀ {v eₗ eᵣ τₗ} → Valτ τₗ v → Case (Inl v) eₗ eᵣ ↦ eₗ [ v ]
+    ss-case-inl : ∀ {v eₗ eᵣ τₗ} → 
+                       Valτ τₗ v → 
+                       (Case (Inl v) eₗ eᵣ ↦ eₗ [ v ])
 
     -- v val
     -- ----------------------------------------------------------
     -- case v [inl x ⇒ eₗ | inr y ⇒ eᵣ] ↦ eᵣ [v / y]
-    ss-case-inr : ∀ {v eₗ eᵣ τᵣ} → Valτ τᵣ v → Case (Inr v) eₗ eᵣ ↦ eᵣ [ v ]
+    ss-case-inr : ∀ {v eₗ eᵣ τᵣ} → 
+                       Valτ τᵣ v → 
+                       (Case (Inr v) eₗ eᵣ ↦ eᵣ [ v ])
 
     --
     -- --------------------------------------------------------
     --   fix τ e ↦ e [fix τ e / x]
-    ss-fix : ∀ {τ e} → Fix τ e ↦ e [ Fix τ e ]
+    ss-fix : ∀ {τ e} → 
+            (Fix τ e ↦ e [ Fix τ e ])

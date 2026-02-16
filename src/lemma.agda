@@ -143,3 +143,12 @@ subst0-τ-inr : ∀ {τ₁ τ₂ τ₃ body v} →
             (∘ ⊢ body [ v ] ⦂ τ₃)
 subst0-τ-inr bodyTy vTy with vTy
 ... | τ-inr vTy' = subst0-τ bodyTy vTy' 
+
+--
+-- If we have closed term (∘ ⊢ e ⦂ τ), we can weaken it to any context Γ.
+--
+weaken-closed : ∀ {Γ e τ} → (∘ ⊢ e ⦂ τ) → (Γ ⊢ e ⦂ τ)
+weaken-closed {Γ = Γ} {e = e} {τ = τ} te =
+  subst (λ Δ → Δ ⊢ e ⦂ τ)
+        (concat-id Γ)                  -- ✅ no sym
+        (τ-weakening {Γ₁ = Γ} {Γ₂ = ∘} te)
