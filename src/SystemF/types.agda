@@ -7,6 +7,7 @@ infixr 7 _×_
 -- Types for now are booleans and natural numbers.
 -- 
 data τ : Set where
+    Unit   : τ
     Nat    : τ
     Bool   : τ
     _×_    : τ → τ → τ

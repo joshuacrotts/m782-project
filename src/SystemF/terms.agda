@@ -8,6 +8,7 @@ open import SystemF.types
 -- Terms for now are booleans and natural numbers.
 -- 
 data Term : Set where
+    ⋆       : Term
     Var     : ℕ → Term
     Lam     : Term → Term
     App     : Term → Term → Term

@@ -43,6 +43,7 @@ open import SystemF.values
 β True s n                  = True   
 β False s n                 = False
 β Zero s n                  = Zero
+β ⋆ s n                     = ⋆
 β (Suc t) s n               = Suc (β t s n)
 β (Pred t) s n              = Pred (β t s n)
 β (Zero? t) s n             = Zero? (β t s n)
