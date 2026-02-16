@@ -53,13 +53,12 @@ open import SystemF.values
 β (Inl t) s n               = Inl (β t s n)
 β (Inr t) s n               = Inr (β t s n)
 β (Case sum left right) s n = Case (β sum s n) (β left s (suc n)) (β right s (suc n))
+β (Fix τ t) s n             = Fix τ (β t s (suc n))
 
 infixl 5 _[_]
 
 _[_] : Term → Term →  Term
 t [ s ] = β t s 0
-
-
 
 
 infix 3 _↦_
@@ -189,3 +188,8 @@ data _↦_ : Term → Term → Set where
     -- ----------------------------------------------------------
     -- case v [inl x ⇒ eₗ | inr y ⇒ eᵣ] ↦ eᵣ [v / y]
     ss-case-inr : ∀ {v eₗ eᵣ τᵣ} → Valτ τᵣ v → Case (Inr v) eₗ eᵣ ↦ eᵣ [ v ]
+
+    --
+    -- --------------------------------------------------------
+    --   fix τ e ↦ e [fix τ e / x]
+    ss-fix : ∀ {τ e} → Fix τ e ↦ e [ Fix τ e ]

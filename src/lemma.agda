@@ -44,6 +44,12 @@ open import SystemF.semantics
 τ-weakening {Γ₁} {Γ₂} (τ-app fTy eTy)   = τ-app (τ-weakening {Γ₁} {Γ₂} fTy) (τ-weakening {Γ₁} {Γ₂} eTy)
 τ-weakening {Γ₁} {Γ₂} (τ-inl τ₁)        = τ-inl (τ-weakening {Γ₁} {Γ₂} τ₁)
 τ-weakening {Γ₁} {Γ₂} (τ-inr τ2)        = τ-inr (τ-weakening {Γ₁}{ Γ₂} τ2)
+τ-weakening {Γ₁} {Γ₂} (τ-fix {Γ = Γ} {τ = τ} {e = e} bodyTy) =
+  let
+    aa = concat-append {Γ₁} {Γ₂} {τ}
+    bb = τ-weakening {Γ₁} {Γ₂ , τ} bodyTy
+  in
+    τ-fix (subst (λ z → z ⊢ e ⦂ τ) aa bb)
 τ-weakening {Γ₁} {Γ₂} (τ-var lookupN)   = τ-var (lookup-concat  {Γ₁} {Γ₂} lookupN)
 τ-weakening {Γ₁} {Γ₂} {e} {τ₃} (τ-case {Γ₂} {leftTy} {rightTy} {τ₃} {τₑ} {el} {er} e' τ₁ τ₂) =
                                              let left   = concat-append {Γ₁} {Γ₂} {leftTy} in
@@ -78,6 +84,20 @@ subst-τ |Γ|≡i (τ-snd τ₁×₂) vTy      = τ-snd (subst-τ |Γ|≡i τ₁
 subst-τ |Γ|≡i (τ-app fTy eTy) vTy   = τ-app (subst-τ |Γ|≡i fTy vTy) (subst-τ |Γ|≡i eTy vTy)
 subst-τ |Γ|≡i (τ-inl τ₁) vTy        = τ-inl (subst-τ |Γ|≡i τ₁ vTy)
 subst-τ |Γ|≡i (τ-inr τ₂) vTy        = τ-inr (subst-τ |Γ|≡i τ₂ vTy)
+subst-τ {Γ} {i} {τ₁} {τ₂} {body = Fix τ e} {v = v} |Γ|≡i
+        (τ-fix {τ = τ} {e = e} bodyTy) vTy =
+  let
+    bodyTy' : (τ₁ ∷ (Γ , τ)) ⊢ e ⦂ τ
+    bodyTy' =
+      subst (λ Δ → Δ ⊢ e ⦂ τ)
+            (∷assoc {Γ = Γ} {τ₁ = τ₁} {τ₂ = τ})
+            bodyTy
+
+    -- under Fix binder, index increases
+    ih : (Γ , τ) ⊢ β e v (suc i) ⦂ τ
+    ih = subst-τ (cong suc |Γ|≡i) bodyTy' vTy
+  in
+    τ-fix ih
 subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-var {Γ'} {m} lookupN) vTy with m ≡ᵇ i in eq
 ... | true  = 
     let m≡i = ≡ᵇ⇒≡ m i (subst T (sym eq) tt)

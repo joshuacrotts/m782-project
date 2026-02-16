@@ -35,7 +35,6 @@ t = (Snd (App (Lam (Cons (Var 0) (Var 0))) Zero))
 tTy : ∘ ⊢ t ⦂ Nat
 tTy = (τ-snd (τ-app (τ-lam (τ-cons (τ-var refl) (τ-var refl))) τ-zero))
 
--- now you can run:
 test : Maybe Term
 test = eval tTy 200
 
@@ -50,6 +49,3 @@ t2Ty =
     (τ-inr {τ1 = Nat} {τ2 = Nat} (τ-suc τ-zero))
     (τ-suc τ-zero)
     τ-zero
-
-eval2 : Maybe Term
-eval2 = eval t2Ty 200

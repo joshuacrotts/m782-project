@@ -4,7 +4,6 @@ open import Data.Nat using (ℕ)
 
 open import SystemF.types
 
-
 --
 -- Terms for now are booleans and natural numbers.
 -- 
@@ -25,4 +24,5 @@ data Term : Set where
     Inl     : Term → Term
     Inr     : Term → Term
     Case    : Term → Term → Term → Term
+    Fix     : τ → Term → Term
 
