@@ -175,3 +175,34 @@ fact5 = App fact (natLit 5)
 fact5τ : ∘ ⊢ fact5 ⦂ Nat
 fact5τ = τ-app factτ (natLitTy 5)
 
+fib : Term
+fib =
+  Fix Nat⇒Nat
+    (Lam
+      (If (Zero? (Var 0))
+          Zero
+          (If (Zero? (Pred (Var 0)))
+              (Suc Zero)
+              (App (App add (App (Var 1) (Pred (Var 0))))
+                   (App (Var 1) 
+                        (Pred (Pred (Var 0))))))))
+fibτ : ∘ ⊢ fib ⦂ Nat ⇒ Nat
+fibτ =
+  τ-fix
+    (τ-lam
+      (τ-if
+        (τ-zero? (τ-var refl))
+        τ-zero
+        (τ-if
+          (τ-zero? (τ-pred (τ-var refl)))
+          (τ-suc τ-zero)
+          (τ-app
+            (τ-app (weaken-closed addτ)
+                    (τ-app (τ-var refl) (τ-pred (τ-var refl))))
+            (τ-app (τ-var refl)
+                    (τ-pred (τ-pred (τ-var refl))))))))
+
+fib10 : Term
+fib10 = App fib (natLit 10)
+fib10τ : ∘ ⊢ fib10 ⦂ Nat
+fib10τ = τ-app fibτ (natLitTy 10)
