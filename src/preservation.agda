@@ -13,9 +13,9 @@ open import lemma
 -- Preservation theorem
 -- If ∘ ⊢ e ⦂ τ and e ↦ e' then ∘ ⊢ e' ⦂ τ
 preservation : ∀ {e e' τ} →
-             (• ︔ ∘ ⊢ e ⦂ τ) →
+             (• ⨟ ∘ ⊢ e ⦂ τ) →
              (e ↦ e') →
-             (• ︔ ∘ ⊢ e' ⦂ τ)
+             (• ⨟ ∘ ⊢ e' ⦂ τ)
              
 -- Proof by induction on the step relation
 preservation (τ-zero? τ-zero) ss-zero?                      = τ-true

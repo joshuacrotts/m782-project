@@ -30,7 +30,7 @@ open import SystemF.semantics
 <suc⇒≤ {m} {i} m<sucI = ≤-pred m<sucI
 
 
-τ-weakening : ∀ {Δ Γ₁ Γ₂ e τ} → (Δ ︔ Γ₂ ⊢ e ⦂ τ) → (Δ ︔ (Γ₁ ++ Γ₂) ⊢ e ⦂ τ)
+τ-weakening : ∀ {Δ Γ₁ Γ₂ e τ} → (Δ ⨟ Γ₂ ⊢ e ⦂ τ) → (Δ ⨟ (Γ₁ ++ Γ₂) ⊢ e ⦂ τ)
 τ-weakening τ-true = τ-true
 τ-weakening τ-false = τ-false
 τ-weakening τ-zero = τ-zero
@@ -50,7 +50,7 @@ open import SystemF.semantics
     aa = concat-append {Γ₁} {Γ₂} {τ}
     bb = τ-weakening {Δ} {Γ₁} {Γ₂ , τ} bodyTy
   in
-    τ-fix (subst (λ z → Δ ︔ z ⊢ e ⦂ τ) aa bb)
+    τ-fix (subst (λ z → Δ ⨟ z ⊢ e ⦂ τ) aa bb)
 τ-weakening {Δ} {Γ₁} {Γ₂} (τ-var lookupN)   = τ-var (lookup-concat  {Γ₁} {Γ₂} lookupN)
 τ-weakening {Δ} {Γ₁} {Γ₂} {e} {τ₃} (τ-case {Δ} {Γ₂} {leftTy} {rightTy} {τ₃} {τₑ} {el} {er} e' τ₁ τ₂) =
     let left   = concat-append {Γ₁} {Γ₂} {leftTy} in
@@ -58,12 +58,12 @@ open import SystemF.semantics
     let leftW  = (τ-weakening {Δ} {Γ₁} {Γ₂ , leftTy} τ₁) in
     let rightW = (τ-weakening {Δ} {Γ₁} {Γ₂ , rightTy} τ₂) in
     τ-case (τ-weakening {Δ} {Γ₁} {Γ₂} e')
-           (subst (λ z → Δ ︔ z ⊢ el ⦂ τ₃) left leftW)
-           (subst (λ z → Δ ︔ z ⊢ er ⦂ τ₃) right rightW)
+           (subst (λ z → Δ ⨟ z ⊢ el ⦂ τ₃) left leftW)
+           (subst (λ z → Δ ⨟ z ⊢ er ⦂ τ₃) right rightW)
 τ-weakening {Δ} {Γ₁} {Γ₂} {e} {τ₁} (τ-lam {Δ} {Γ} {τ₃} {τ₄} {e'} bodyTy) = 
     let aa = concat-append {Γ₁} {Γ₂} {τ₃}
         bb = τ-weakening {Δ} {Γ₁} {Γ , τ₃} bodyTy
-    in τ-lam (subst (λ z → Δ ︔ z ⊢ e' ⦂ τ₄) aa bb)
+    in τ-lam (subst (λ z → Δ ⨟ z ⊢ e' ⦂ τ₄) aa bb)
 τ-weakening {Δ} {Γ₁} {Γ₂} {e} {τ₁} (τ-lamT bodyTy) = 
     {!   !}
 
@@ -72,9 +72,9 @@ open import SystemF.semantics
 
 subst-τ : ∀ {Γ i τ₁ τ₂ body v} →
                  (size Γ ≡ i) →
-                 (• ︔ (τ₁ ∷ Γ) ⊢ body ⦂ τ₂) →
-                 (• ︔ ∘ ⊢ v ⦂ τ₁) →
-                 (• ︔ Γ ⊢ (β body v i) ⦂ τ₂)
+                 (• ⨟ (τ₁ ∷ Γ) ⊢ body ⦂ τ₂) →
+                 (• ⨟ ∘ ⊢ v ⦂ τ₁) →
+                 (• ⨟ Γ ⊢ (β body v i) ⦂ τ₂)
 subst-τ |Γ|≡i (τ-true) vTy          = τ-true
 subst-τ |Γ|≡i (τ-false) vTy         = τ-false
 subst-τ |Γ|≡i (τ-zero) vTy          = τ-zero
@@ -91,14 +91,14 @@ subst-τ |Γ|≡i (τ-inr τ₂) vTy        = τ-inr (subst-τ |Γ|≡i τ₂ vT
 subst-τ {Γ} {i} {τ₁} {τ₂} {body = Fix τ e} {v = v} |Γ|≡i
         (τ-fix {τ = τ} {e = e} bodyTy) vTy =
   let
-    bodyTy' : • ︔ (τ₁ ∷ (Γ , τ)) ⊢ e ⦂ τ
+    bodyTy' : • ⨟ (τ₁ ∷ (Γ , τ)) ⊢ e ⦂ τ
     bodyTy' =
-      subst (λ Δ → • ︔ Δ ⊢ e ⦂ τ)
+      subst (λ Δ → • ⨟ Δ ⊢ e ⦂ τ)
             (∷assoc {Γ = Γ} {τ₁ = τ₁} {τ₂ = τ})
             bodyTy
 
     -- under Fix binder, index increases
-    ih : • ︔ (Γ , τ) ⊢ β e v (suc i) ⦂ τ
+    ih : • ⨟ (Γ , τ) ⊢ β e v (suc i) ⦂ τ
     ih = subst-τ (cong suc |Γ|≡i) bodyTy' vTy
   in
     τ-fix ih
@@ -108,8 +108,8 @@ subst-τ {Γ} {i} {τ₁} {τ₂} {body} {v} |Γ|≡i (τ-var {Δ} {Γ'} {m} loo
         lookupI1 = lookup-head {Γ} {τ₁} {i} |Γ|≡i
         lookupI2 = subst (λ z → lookup z (τ₁ ∷ Γ) ≡ just τ₂)  m≡i lookupN 
         τ₁≡τ₂ = just-injective (trans (sym lookupI1) lookupI2)
-        ΓvTy =  subst (λ z → • ︔ z ⊢ v ⦂ τ₁) (concat-id Γ) (τ-weakening {Δ} {Γ} {∘} vTy)
-    in subst (λ z → • ︔ Γ ⊢ v ⦂ z) τ₁≡τ₂ ΓvTy
+        ΓvTy =  subst (λ z → • ⨟ z ⊢ v ⦂ τ₁) (concat-id Γ) (τ-weakening {Δ} {Γ} {∘} vTy)
+    in subst (λ z → • ⨟ Γ ⊢ v ⦂ z) τ₁≡τ₂ ΓvTy
 ... | false = 
     let m<|Γ'| = (lookup-size {Γ'} {m} lookupN)
         m≤|Γ| = <suc⇒≤ (subst (λ z → m < z) (size-head {Γ} {τ₁}) m<|Γ'|)
@@ -129,32 +129,32 @@ subst-τ |Γ|≡i (τ-appT bodyTy) vTy = {!   !}
 
 
 subst0-τ : ∀ {τ₁ τ₂ body v} →
-            (• ︔ ∘ , τ₁ ⊢ body ⦂ τ₂) →
-            (• ︔ ∘ ⊢ v ⦂ τ₁) →
-            (• ︔ ∘ ⊢ body [ v ] ⦂ τ₂)
+            (• ⨟ ∘ , τ₁ ⊢ body ⦂ τ₂) →
+            (• ⨟ ∘ ⊢ v ⦂ τ₁) →
+            (• ⨟ ∘ ⊢ body [ v ] ⦂ τ₂)
 subst0-τ bodyTy vTy  = subst-τ refl bodyTy vTy
 
 
 subst0-τ-inl : ∀ {τ₁ τ₂ τ₃ body v} →
-            (• ︔ ∘ , τ₁ ⊢ body ⦂ τ₃) →
-            (• ︔ ∘ ⊢ (Inl v) ⦂ τ₁ + τ₂) →
-            (• ︔ ∘ ⊢ body [ v ] ⦂ τ₃)
+            (• ⨟ ∘ , τ₁ ⊢ body ⦂ τ₃) →
+            (• ⨟ ∘ ⊢ (Inl v) ⦂ τ₁ + τ₂) →
+            (• ⨟ ∘ ⊢ body [ v ] ⦂ τ₃)
 subst0-τ-inl bodyTy vTy with vTy
 ... | τ-inl vTy' = subst0-τ bodyTy vTy' 
 
 
 subst0-τ-inr : ∀ {τ₁ τ₂ τ₃ body v} →
-            (• ︔ ∘ , τ₂ ⊢ body ⦂ τ₃) →
-            (• ︔ ∘ ⊢ (Inr v) ⦂ τ₁ + τ₂) →
-            (• ︔ ∘ ⊢ body [ v ] ⦂ τ₃)
+            (• ⨟ ∘ , τ₂ ⊢ body ⦂ τ₃) →
+            (• ⨟ ∘ ⊢ (Inr v) ⦂ τ₁ + τ₂) →
+            (• ⨟ ∘ ⊢ body [ v ] ⦂ τ₃)
 subst0-τ-inr bodyTy vTy with vTy
 ... | τ-inr vTy' = subst0-τ bodyTy vTy' 
 
 --
 -- If we have closed term (∘ ⊢ e ⦂ τ), we can weaken it to any context Γ.
 --
-weaken-closed : ∀ {Γ e τ} → (• ︔ ∘ ⊢ e ⦂ τ) → (• ︔ Γ ⊢ e ⦂ τ)
+weaken-closed : ∀ {Γ e τ} → (• ⨟ ∘ ⊢ e ⦂ τ) → (• ⨟ Γ ⊢ e ⦂ τ)
 weaken-closed {Γ = Γ} {e = e} {τ = τ} te =
-  subst (λ Δ → • ︔ Δ ⊢ e ⦂ τ)
+  subst (λ Δ → • ⨟ Δ ⊢ e ⦂ τ)
         (concat-id Γ)                  -- ✅ no sym
         (τ-weakening {Γ₁ = Γ} {Γ₂ = ∘} te)
