@@ -41,6 +41,7 @@ toBool True  = just true
 toBool False = just false
 toBool _     = nothing
 
+
 -- 
 -- Eval partial function, use n steps to limit evaluation depth.
 -- If evaluation finishes before n steps, return the resulting value wrapped in just.
@@ -241,3 +242,43 @@ length3τ = τ-app lengthℕτ (τ-lcons (natLitTy 1) (τ-lcons (natLitTy 2) (τ
 
 val : Maybe ℕ
 val = evalNat length3τ 1000
+
+
+appendℕ : Term
+appendℕ =
+  Fix (List Nat ⇒ List Nat ⇒ List Nat)
+    (Lam
+      (Lam
+        (If (Nil? (Var 1))
+            (Var 0)
+            (Case (First (Var 1))
+              -- left branch: binder is Unit at Var 0, so ys is Var 1
+              (Var 1)
+              -- right branch: binder is x : Nat at Var 0
+              (LCons (Var 0)
+                (App (App (Var 3) (Rest (Var 2))) (Var 1)))))))
+
+
+appendℕτ : • ⨟ ∘ ⊢ appendℕ ⦂ List Nat ⇒ List Nat ⇒ List Nat
+appendℕτ =
+  τ-fix
+    (τ-lam
+      (τ-lam
+        (τ-if
+          (τ-nil? (τ-var {n = 1} refl))
+          (τ-var {n = 0} refl)
+          (τ-case
+            (τ-first (τ-var {n = 1} refl))      -- First xs : Unit + Nat
+            (τ-var {n = 1} refl)                -- left branch returns ys
+            (τ-lcons
+              (τ-var {n = 0} refl)              -- x : Nat
+              (τ-app
+                (τ-app (τ-var {n = 3} refl)
+                       (τ-rest (τ-var {n = 2} refl)))  -- Rest xs
+                (τ-var {n = 1} refl)))))))      -- ys
+
+append12to3 : Term
+append12to3 = App (App appendℕ (LCons (natLit 1) (LCons (natLit 2) (Nil Nat)))) (LCons (natLit 3) (Nil Nat))
+append12to3τ : • ⨟ ∘ ⊢ append12to3 ⦂ List Nat
+append12to3τ = τ-app (τ-app appendℕτ (τ-lcons (natLitTy 1) (τ-lcons (natLitTy 2) (τ-nil {τ = Nat})))) (τ-lcons (natLitTy 3) (τ-nil {τ = Nat}))
+
