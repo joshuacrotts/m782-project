@@ -57,6 +57,9 @@ open import SystemF.values
 β (Fix τ t) s n             = Fix τ (β t s (suc n))
 β (LamT t) s n              = LamT (β t s n)
 β (AppT t τ) s n            = AppT (β t s n) τ
+β (Nil τ) s n               = Nil τ
+β (Nil? t) s n              = Nil? (β t s n)
+β (LCons t u) s n           = LCons (β t s n) (β u s n)
 
 infixl 5 _[_]
 
@@ -84,8 +87,11 @@ t [ s ] = β t s 0
 β' (Inr t) s n               = Inr (β' t s n)
 β' (Case sum left right) s n = Case (β' sum s n) (β' left s n) (β' right s n)
 β' (Fix τ t) s n             = Fix τ (β' t s n)
-β' (LamT t) s n             = LamT (β' t s (suc n))
-β' (AppT t τ) s n = AppT (β' t s n) (τ #[ s ])
+β' (LamT t) s n              = LamT (β' t s (suc n))
+β' (AppT t τ) s n            = AppT (β' t s n) (τ #[ s ])
+β' (Nil τ) s n               = Nil (τ #[ s ])
+β' (Nil? t) s n              = Nil? (β' t s n)
+β' (LCons t u) s n           = LCons (β' t s n) (β' u s n)
 
 
 infixl 5 _[_]'
@@ -289,3 +295,43 @@ data _↦_ : Term → Term → Set where
     -- -- appT (lamT body) τ1 ↦ body [τ1 / α]
     ss-appT-beta : ∀ {body τ1} → 
                       (AppT (LamT body) τ1 ↦ body [ τ1 ]')
+
+----------------------------------------------------
+--           SEMANTICS FOR LISTS.                 --
+----------------------------------------------------
+
+    --        v ↦ v'
+    -- -----------------------------
+    --    lcons(v, vs) ↦ lcons(v', vs)
+    ss-lcons-first-step : ∀ {v v' vs} →
+                             (v ↦ v') → 
+                        (LCons v vs ↦ LCons v' vs)
+
+    --       v val           vs ↦ vs'
+    -- -------------------------------------
+    --    lcons(v, vs) ↦ lcons(v, vs')
+    ss-lcons-rest-step : ∀ {τ v vs vs'} →
+                               Valτ τ v → 
+                             (vs ↦ vs') → 
+                           (LCons v vs ↦ LCons v vs')
+
+    --            e ↦ e'
+    -- -------------------------------------
+    --      nil? τ e ↦ nil? τ e'
+    ss-nil-step : ∀ {e e'} →
+                    (e ↦ e') →
+                    (Nil? e ↦ Nil? e')
+
+    --            
+    -- -------------------------------------
+    --        nil? τ (nil) ↦ true
+    ss-nil-true : ∀ {τ} → 
+                    (Nil? (Nil τ) ↦ True)
+
+    --    v val             vs val
+    -- -------------------------------------
+    --        nil? τ (lcons(v, vs)) ↦ false
+    ss-nil-false : ∀ {τ v vs} →
+                     Valτ τ v → 
+             Valτ (List τ) vs → 
+             (Nil? (LCons v vs) ↦ False)

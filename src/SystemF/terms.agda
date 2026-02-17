@@ -28,4 +28,9 @@ data Term : Set where
     Fix     : τ → Term → Term
     LamT    : Term → Term
     AppT    : Term → τ → Term
+    Nil     : τ → Term
+    Nil?    : Term → Term
+    LCons   : Term → Term → Term
+    -- First : τ → Term → Term
+    -- Rest  : τ → Term → Term
 

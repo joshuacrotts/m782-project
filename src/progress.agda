@@ -121,3 +121,22 @@ progress (τ-appT {f = f} {τ1 = τ1} {τ2 = τ2} tf) with progress tf
 ... | inj₁ (vτ-lamT {body = body}) =
       inj₂ (body [ τ2 ]' , ss-appT-beta)
 
+
+-----------------------------------------------------
+-- PROGRESS FOR LISTS.                             --
+-----------------------------------------------------
+progress (τ-nil) = inj₁ vτ-nil
+
+progress (τ-nil? {e = e} te) with progress te
+... | inj₂ (e' , step) = inj₂ (Nil? e' , ss-nil-step step)
+... | inj₁ v with v
+...   | vτ-nil {τ = τ} =
+        inj₂ (True , ss-nil-true {τ = τ})
+...   | vτ-lcons {τ = τ} {v1 = v1} {v2 = vs} vVal vsVal =
+        inj₂ (False , ss-nil-false {τ = τ} vVal vsVal)
+
+progress (τ-lcons {e1 = e1} {e2 = e2} τ₁ τ₂) with progress τ₁
+... | inj₂ (e1' , step1)        = inj₂ (LCons e1' e2 , ss-lcons-first-step step1)
+... | inj₁ v1 with progress τ₂
+...     | inj₁ v2               = inj₁ (vτ-lcons v1 v2)
+...     | inj₂ (e2' , step2)    = inj₂ (LCons e1 e2' , ss-lcons-rest-step v1 step2)

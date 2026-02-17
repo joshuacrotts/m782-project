@@ -20,6 +20,7 @@ data τ : Set where
     _+_    : τ → τ → τ
     _⇒_    : τ → τ → τ
     ∀'_    : τ → τ         -- ∀α. body  (α is implicitly index 0 in body)
+    List   : τ → τ        -- List type constructor
 
 
 
@@ -36,6 +37,7 @@ data τ : Set where
 β# (τ₁ + τ₂) σ n = (β# τ₁ σ n) + (β# τ₂ σ n)
 β# (τ₁ ⇒ τ₂) σ n = (β# τ₁ σ n) ⇒ (β# τ₂ σ n)
 β# (∀' τ₁) σ n = ∀' (β# τ₁ σ (suc n))
+β# (List τ₁) σ n = List (β# τ₁ σ n)
 
 infixl 5 _#[_]
 

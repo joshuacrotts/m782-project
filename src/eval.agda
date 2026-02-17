@@ -85,34 +85,43 @@ natLitTy zero    = τ-zero
 natLitTy (suc n) = τ-suc (natLitTy n)
 
 -- Natural Number addition.
+Nat⇒Nat⇒Nat⇒Nat : τ
+Nat⇒Nat⇒Nat⇒Nat = Nat ⇒ Nat ⇒ Nat ⇒ Nat
+
 Nat⇒Nat⇒Nat : τ
 Nat⇒Nat⇒Nat = Nat ⇒ Nat ⇒ Nat
 
 Nat⇒Nat : τ
 Nat⇒Nat = Nat ⇒ Nat
 
-add : Term
-add = Fix Nat⇒Nat⇒Nat 
-        (Lam 
-          (Lam 
-            (If (Zero? (Var 1))
-                       (Var 0)
-                       (Suc (App (App (Var 2) (Pred (Var 1))) (Var 0))))))
 
-addτ : • ⨟ ∘ ⊢ add ⦂ Nat ⇒ Nat ⇒ Nat
-addτ = 
-  τ-fix 
+addTR : Term
+addTR =
+  Fix Nat⇒Nat⇒Nat
+    (Lam
+      (Lam
+        (If (Zero? (Var 1))
+            (Var 0)
+            (App (App (Var 2) (Pred (Var 1)))
+                 (Suc (Var 0))))))   -- tail call: addTR (pred m) (suc acc)
+
+addTRτ : • ⨟ ∘ ⊢ addTR ⦂ Nat ⇒ Nat ⇒ Nat
+addTRτ =
+  τ-fix
     (τ-lam
       (τ-lam
-        (τ-if 
-          (τ-zero? (τ-var refl))
-          (τ-var refl)
-          (τ-suc 
-            (τ-app 
-              (τ-app 
-                (τ-var refl) 
-                (τ-pred (τ-var refl)))
-              (τ-var refl))))))
+        (τ-if
+          -- condition: zero? m
+          (τ-zero? (τ-var {n = 1} refl))
+          -- then: acc
+          (τ-var {n = 0} refl)
+          -- else: addTR (pred m) (suc acc)
+          (τ-app
+            (τ-app
+              (τ-var {n = 2} refl)
+              (τ-pred (τ-var {n = 1} refl)))
+            (τ-suc (τ-var {n = 0} refl))))))
+
 
 -- Natural number multiplication.
 mul : Term
@@ -122,7 +131,7 @@ mul =
       (Lam
         (If (Zero? (Var 1))
             Zero
-            (App (App add (Var 0))
+            (App (App addTR (Var 0))
                  (App (App (Var 2) 
                            (Pred (Var 1))) 
                       (Var 0))))))
@@ -136,7 +145,7 @@ mulτ =
           (τ-zero? (τ-var refl))
           τ-zero
           (τ-app
-            (τ-app (weaken-closed addτ) 
+            (τ-app (weaken-closed addTRτ) 
                    (τ-var refl))
             (τ-app
               (τ-app
@@ -183,7 +192,7 @@ fib =
           Zero
           (If (Zero? (Pred (Var 0)))
               (Suc Zero)
-              (App (App add (App (Var 1) (Pred (Var 0))))
+              (App (App addTR (App (Var 1) (Pred (Var 0))))
                    (App (Var 1) 
                         (Pred (Pred (Var 0))))))))
 fibτ : • ⨟ ∘ ⊢ fib ⦂ Nat ⇒ Nat
@@ -197,7 +206,7 @@ fibτ =
           (τ-zero? (τ-pred (τ-var refl)))
           (τ-suc τ-zero)
           (τ-app
-            (τ-app (weaken-closed addτ)
+            (τ-app (weaken-closed addTRτ)
                     (τ-app (τ-var refl) (τ-pred (τ-var refl))))
             (τ-app (τ-var refl)
                     (τ-pred (τ-pred (τ-var refl))))))))
@@ -206,3 +215,4 @@ fib10 : Term
 fib10 = App fib (natLit 10)
 fib10τ : • ⨟ ∘ ⊢ fib10 ⦂ Nat
 fib10τ = τ-app fibτ (natLitTy 10)
+

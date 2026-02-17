@@ -72,3 +72,12 @@ preservation (τ-appT fTy) (ss-appT-func stepf)            = τ-appT (preservati
 
 -- appT : beta
 preservation (τ-appT (τ-lamT bodyTy)) (ss-appT-beta)  = {!   !}
+
+-- nil?
+preservation (τ-nil? τ) (ss-nil-step step) = τ-nil? (preservation τ step)
+preservation (τ-nil? τ) (ss-nil-true) = τ-true
+preservation (τ-nil? τ) (ss-nil-false vVal vsVal) = τ-false
+
+-- lcons
+preservation (τ-lcons τ₁ τ₂) (ss-lcons-first-step step) = τ-lcons (preservation τ₁ step) τ₂
+preservation (τ-lcons τ₁ τ₂) (ss-lcons-rest-step v1 step) = τ-lcons τ₁ (preservation τ₂ step)

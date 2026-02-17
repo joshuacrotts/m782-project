@@ -23,3 +23,6 @@ data Valτ : τ → Term → Set where
   vτ-inr  : ∀ {τ1 τ2 v} → Valτ τ2 v → Valτ (τ1 + τ2) (Inr v)
 
   vτ-lamT : ∀ {τ body} → Valτ (∀' τ) (LamT body)  
+
+  vτ-nil   : ∀ {τ} → Valτ (List τ) (Nil τ)
+  vτ-lcons : ∀ {τ v1 v2} → Valτ τ v1 → Valτ (List τ) v2 → Valτ (List τ) (LCons v1 v2) 
