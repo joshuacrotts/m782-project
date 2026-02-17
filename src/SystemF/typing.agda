@@ -22,6 +22,12 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     τ-var :           ∀ {Δ Γ n τ} → 
             lookup n Γ ≡ just τ → Δ ⨟ Γ ⊢ Var n ⦂ τ
 
+    -- 
+    -- ----------------------------
+    --     Δ ⨟ Γ ⊢ ⋆ : Unit
+    τ-unit : ∀ {Δ Γ} → 
+             (Δ ⨟ Γ ⊢ ⋆ ⦂ Unit)
+
     --
     -- ---------------------------
     --      Δ ⨟ Γ ⊢ true ⦂ Bool
@@ -183,16 +189,14 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
 
     --  Δ ⨟ Γ ⊢ x : τ     Δ ⨟ Γ ⊢ xs : List τ
     --  --------------------------------------------
-    --     Δ ⨟ Γ ⊢ first (lcons x xs) : τ
-    τ-first : ∀ {Δ Γ τ e1 e2} →
-                (Δ ⨟ Γ ⊢ e1 ⦂ τ) →
-                (Δ ⨟ Γ ⊢ e2 ⦂ List τ) →
-                (Δ ⨟ Γ ⊢ First (LCons e1 e2) ⦂ τ)
+    --     Δ ⨟ Γ ⊢ first (lcons x xs) : (Unit + τ)
+    τ-first : ∀ {Δ Γ τ e} →
+                (Δ ⨟ Γ ⊢ e ⦂ List τ) →
+                (Δ ⨟ Γ ⊢ First e ⦂ (Unit + τ))
     
     -- Δ ⨟ Γ ⊢ x : τ     Δ ⨟ Γ ⊢ xs : List τ
     -- --------------------------------------------
     --     Δ ⨟ Γ ⊢ rest (lcons x xs) : List τ
-    τ-rest : ∀ {Δ Γ τ e1 e2} →
-            (Δ ⨟ Γ ⊢ e1 ⦂ τ) →
-       (Δ ⨟ Γ ⊢ e2 ⦂ List τ) →
-       (Δ ⨟ Γ ⊢ Rest (LCons e1 e2) ⦂ List τ)
+    τ-rest : ∀ {Δ Γ τ e} →
+       (Δ ⨟ Γ ⊢ e ⦂ List τ) →
+       (Δ ⨟ Γ ⊢ Rest e ⦂ List τ)

@@ -354,18 +354,31 @@ data _↦_ : Term → Term → Set where
                    (e ↦ e') →
                    (Rest e ↦ Rest e')
 
-    --          x val xs val
+    --          
     -- -------------------------------------
-    --    first (lcons x xs) ↦ x
-    ss-first : ∀ {τ x xs} →
-                 Valτ τ x → 
-         Valτ (List τ) xs → 
-         (First (LCons x xs) ↦ x)
-  
+    --    first nil = Inl ⋆
+    ss-first-nil : ∀ {τ} →
+                    (First (Nil τ) ↦ Inl ⋆)
+
+
     --         x val xs val
+    --  -------------------------------------
+    --    first (lcons x xs) = Inr x
+    ss-first-lcons : ∀ {τ x xs} →
+                      Valτ τ x →  
+                      Valτ (List τ) xs →
+                      (First (LCons x xs) ↦ Inr x)
+  
+    --         
     -- -------------------------------------
+    --    rest nil ↦ nil
+    ss-rest-nil : ∀ {τ} →
+                    (Rest (Nil τ) ↦ Nil τ)
+
+    --         x val xs val
+    --  -------------------------------------
     --    rest (lcons x xs) ↦ xs
-    ss-rest : ∀ {τ x xs} →
-                Valτ τ x →
-        Valτ (List τ) xs →
-          (Rest (LCons x xs) ↦ xs)
+    ss-rest-lcons : ∀ {τ x xs} →
+                      Valτ τ x →  
+                      Valτ (List τ) xs →
+                      (Rest (LCons x xs) ↦ xs)

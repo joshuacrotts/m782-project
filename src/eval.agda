@@ -216,3 +216,28 @@ fib10 = App fib (natLit 10)
 fib10τ : • ⨟ ∘ ⊢ fib10 ⦂ Nat
 fib10τ = τ-app fibτ (natLitTy 10)
 
+lengthℕ : Term
+lengthℕ =
+  Fix (List Nat ⇒ Nat)
+    (Lam
+      (If (Nil? (Var 0))
+          Zero
+          (Suc (App (Var 1) (Rest (Var 0))))))
+
+lengthℕτ : • ⨟ ∘ ⊢ lengthℕ ⦂ List Nat ⇒ Nat
+lengthℕτ =
+  τ-fix
+    (τ-lam
+      (τ-if
+        (τ-nil? (τ-var refl))
+        τ-zero
+        (τ-suc (τ-app (τ-var {n = 1} refl)
+                      (τ-rest (τ-var refl))))))
+
+length3 : Term
+length3 = App lengthℕ (LCons (natLit 1) (LCons (natLit 2) (LCons (natLit 3) (Nil Nat))))
+length3τ : • ⨟ ∘ ⊢ length3 ⦂ Nat
+length3τ = τ-app lengthℕτ (τ-lcons (natLitTy 1) (τ-lcons (natLitTy 2) (τ-lcons (natLitTy 3) (τ-nil {τ = Nat}))))
+
+val : Maybe ℕ
+val = evalNat length3τ 1000

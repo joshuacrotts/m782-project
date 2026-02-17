@@ -23,6 +23,9 @@ progress : ∀ {e τ} →
          (Valτ τ e ⊎ Σ[ e' ∈ Term ] (e ↦ e'))
 
 -- Proof by induction on typing derivation
+
+progress τ-unit  = inj₁ (vτ-unit)
+
 -- true case
 progress τ-true  = inj₁ (vτ-true)
 
@@ -140,3 +143,19 @@ progress (τ-lcons {e1 = e1} {e2 = e2} τ₁ τ₂) with progress τ₁
 ... | inj₁ v1 with progress τ₂
 ...     | inj₁ v2               = inj₁ (vτ-lcons v1 v2)
 ...     | inj₂ (e2' , step2)    = inj₂ (LCons e1 e2' , ss-lcons-rest-step v1 step2)
+
+progress (τ-first {e = e} τ) with progress τ
+... | inj₂ (e' , step) = inj₂ (First e' , ss-first-step step)
+... | inj₁ v with v
+...   | vτ-nil {τ = τ} =
+        inj₂ (Inl ⋆ , ss-first-nil {τ = τ})
+...   | vτ-lcons {τ = τ} {v1 = x} {v2 = xs} xVal xsVal =
+        inj₂ (Inr x , ss-first-lcons {τ = τ} xVal xsVal)
+
+progress (τ-rest {e = e} τ) with progress τ
+... | inj₂ (e' , step) = inj₂ (Rest e' , ss-rest-step step)
+... | inj₁ v with v
+...   | vτ-nil {τ = τ} =
+        inj₂ (Nil τ , ss-rest-nil {τ = τ})
+...   | vτ-lcons {τ = τ} {v1 = x} {v2 = xs} xVal xsVal =
+        inj₂ (xs , ss-rest-lcons {τ = τ} xVal xsVal)

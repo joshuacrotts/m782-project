@@ -34,6 +34,7 @@ open import SystemF.semantics
 τ-weakening τ-true = τ-true
 τ-weakening τ-false = τ-false
 τ-weakening τ-zero = τ-zero
+τ-weakening τ-unit = τ-unit
 τ-weakening {Γ₁} {Γ₂} (τ-suc τ₁)        = τ-suc (τ-weakening {Γ₁} {Γ₂} τ₁)
 τ-weakening {Γ₁} {Γ₂} (τ-pred τ₁)       = τ-pred (τ-weakening {Γ₁} {Γ₂} τ₁)
 τ-weakening {Γ₁} {Γ₂} (τ-zero? τ₁)      = τ-zero? (τ-weakening {Γ₁} {Γ₂} τ₁)
@@ -46,10 +47,10 @@ open import SystemF.semantics
 τ-weakening {Γ₁} {Γ₂} (τ-inl τ₁)        = τ-inl (τ-weakening {Γ₁} {Γ₂} τ₁)
 τ-weakening {Γ₁} {Γ₂} (τ-inr τ2)        = τ-inr (τ-weakening {Γ₁}{ Γ₂} τ2)
 τ-weakening {Γ₁} {Γ₂} (τ-nil)           = τ-nil
-τ-weakening {Γ₁} {Γ₂} (τ-nil? τ)         = τ-nil? (τ-weakening {Γ₁} {Γ₂} τ)
+τ-weakening {Γ₁} {Γ₂} (τ-nil? τ)        = τ-nil? (τ-weakening {Γ₁} {Γ₂} τ)
 τ-weakening {Γ₁} {Γ₂} (τ-lcons τ₁ τ₂)   = τ-lcons (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂)
-τ-weakening {Γ₁} {Γ₂} (τ-first τ₁ τ₂)   = τ-first (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂)
-τ-weakening {Γ₁} {Γ₂} (τ-rest τ₁ τ₂)    = τ-rest (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂)
+τ-weakening {Γ₁} {Γ₂} (τ-first τ)   = τ-first (τ-weakening {Γ₁} {Γ₂} τ)
+τ-weakening {Γ₁} {Γ₂} (τ-rest τ)    = τ-rest (τ-weakening {Γ₁} {Γ₂} τ)
 τ-weakening {Δ} {Γ₁} {Γ₂} (τ-fix {Δ} {Γ} {τ} {e} bodyTy) =
   let
     aa = concat-append {Γ₁} {Γ₂} {τ}
@@ -80,6 +81,7 @@ subst-τ : ∀ {Γ i τ₁ τ₂ body v} →
                  (• ⨟ (τ₁ ∷ Γ) ⊢ body ⦂ τ₂) →
                  (• ⨟ ∘ ⊢ v ⦂ τ₁) →
                  (• ⨟ Γ ⊢ (β body v i) ⦂ τ₂)
+subst-τ |Γ|≡i (τ-unit) vTy          = τ-unit                 
 subst-τ |Γ|≡i (τ-true) vTy          = τ-true
 subst-τ |Γ|≡i (τ-false) vTy         = τ-false
 subst-τ |Γ|≡i (τ-zero) vTy          = τ-zero
@@ -96,8 +98,8 @@ subst-τ |Γ|≡i (τ-inr τ₂) vTy        = τ-inr (subst-τ |Γ|≡i τ₂ vT
 subst-τ |Γ|≡i (τ-nil) vTy           = τ-nil
 subst-τ |Γ|≡i (τ-nil? τ) vTy        = τ-nil? (subst-τ |Γ|≡i τ vTy)
 subst-τ |Γ|≡i (τ-lcons τ₁ τ₂) vTy   = τ-lcons (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy)
-subst-τ |Γ|≡i (τ-first τ₁ τ₂) vTy   = τ-first (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy)
-subst-τ |Γ|≡i (τ-rest τ₁ τ₂) vTy    = τ-rest (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy)
+subst-τ |Γ|≡i (τ-first τ) vTy   = τ-first (subst-τ |Γ|≡i τ vTy)
+subst-τ |Γ|≡i (τ-rest τ) vTy    = τ-rest (subst-τ |Γ|≡i τ vTy)
 subst-τ {Γ} {i} {τ₁} {τ₂} {body = Fix τ e} {v = v} |Γ|≡i
         (τ-fix {τ = τ} {e = e} bodyTy) vTy =
   let
