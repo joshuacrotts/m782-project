@@ -14,12 +14,12 @@ open import SystemF.typing
 open import SystemF.semantics
 
 import SystemF.context as C
-open C using (TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
+open C using (TypeContext; •; TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
 
 -- Progress theorem
--- If ∘ ⊢ e ⦂ τ then either e Val or e steps to e'.
+-- If • ︔ ∘ ⊢ e ⦂ τ then either e Val or e steps to e'.
 progress : ∀ {e τ} → 
-         (∘ ⊢ e ⦂ τ) → 
+         (• ︔ ∘ ⊢ e ⦂ τ) → 
          (Valτ τ e ⊎ Σ[ e' ∈ Term ] (e ↦ e'))
 
 -- Proof by induction on typing derivation
@@ -109,3 +109,11 @@ progress (τ-case {e = e} {eₗ = eₗ} {eᵣ = eᵣ} τₑ τₗTy τᵣTy) wit
 
 -- fix case
 progress (τ-fix {τ = τ} {e = e} τₑ) = inj₂ ( e [ Fix τ e ] , ss-fix)
+
+
+-- lamT case
+progress (τ-lamT tf) = {!   !}
+
+-- appT case
+progress (τ-appT tf) = {!   !}
+

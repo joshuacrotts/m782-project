@@ -18,7 +18,7 @@ open import preservation
 open import lemma using (weaken-closed)
 
 import SystemF.context as C
-open C using (TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
+open C using (TypeContext; •; TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
 
 
 --
@@ -46,7 +46,7 @@ toBool _     = nothing
 -- If evaluation finishes before n steps, return the resulting value wrapped in just.
 -- If evaluation does not finish before n steps, return nothing.
 --
-eval : ∀ {e τ} → (te : ∘ ⊢ e ⦂ τ) → ℕ → Maybe Term
+eval : ∀ {e τ} → (te : • ︔ ∘ ⊢ e ⦂ τ) → ℕ → Maybe Term
 eval te zero = nothing
 eval {e = e} te (suc n) with progress te
 ... | inj₁ v = just e
@@ -56,7 +56,7 @@ eval {e = e} te (suc n) with progress te
 -- Evaluates a term that reduces to type Nat. 
 -- Displays the results as a Maybe ℕ.
 -- 
-evalNat : ∀ {e} → (te : ∘ ⊢ e ⦂ Nat) → ℕ → Maybe ℕ
+evalNat : ∀ {e} → (te : • ︔ ∘ ⊢ e ⦂ Nat) → ℕ → Maybe ℕ
 evalNat te fuel with eval te fuel
 ... | just v  = toℕ v
 ... | nothing = nothing
@@ -65,7 +65,7 @@ evalNat te fuel with eval te fuel
 -- Evaluates a term that reduces to type Bool.
 -- Displays the result as a Maybe 𝔹.
 --
-evalBool : ∀ {e} → (te : ∘ ⊢ e ⦂ Bool) → ℕ → Maybe 𝔹
+evalBool : ∀ {e} → (te : • ︔ ∘ ⊢ e ⦂ Bool) → ℕ → Maybe 𝔹
 evalBool te fuel with eval te fuel
 ... | just v  = toBool v
 ... | nothing = nothing
@@ -80,7 +80,7 @@ natLit (suc n) = Suc (natLit n)
 --
 -- Creates a type judgment for a ℕ literal.
 --
-natLitTy : ∀ n → ∘ ⊢ natLit n ⦂ Nat
+natLitTy : ∀ n → • ︔ ∘ ⊢ natLit n ⦂ Nat
 natLitTy zero    = τ-zero
 natLitTy (suc n) = τ-suc (natLitTy n)
 
@@ -99,7 +99,7 @@ add = Fix Nat⇒Nat⇒Nat
                        (Var 0)
                        (Suc (App (App (Var 2) (Pred (Var 1))) (Var 0))))))
 
-addτ : ∘ ⊢ add ⦂ Nat ⇒ Nat ⇒ Nat
+addτ : • ︔ ∘ ⊢ add ⦂ Nat ⇒ Nat ⇒ Nat
 addτ = 
   τ-fix 
     (τ-lam
@@ -127,7 +127,7 @@ mul =
                            (Pred (Var 1))) 
                       (Var 0))))))
           
-mulτ : ∘ ⊢ mul ⦂ Nat ⇒ Nat ⇒ Nat
+mulτ : • ︔ ∘ ⊢ mul ⦂ Nat ⇒ Nat ⇒ Nat
 mulτ =
   τ-fix
     (τ-lam
@@ -155,7 +155,7 @@ fact =
                (App (Var 1) 
                     (Pred (Var 0))))))
 
-factτ : ∘ ⊢ fact ⦂ Nat ⇒ Nat
+factτ : • ︔ ∘ ⊢ fact ⦂ Nat ⇒ Nat
 factτ =
   τ-fix
     (τ-lam
@@ -172,7 +172,7 @@ factτ =
 fact5 : Term
 fact5 = App fact (natLit 5)
 
-fact5τ : ∘ ⊢ fact5 ⦂ Nat
+fact5τ : • ︔ ∘ ⊢ fact5 ⦂ Nat
 fact5τ = τ-app factτ (natLitTy 5)
 
 fib : Term
@@ -186,7 +186,7 @@ fib =
               (App (App add (App (Var 1) (Pred (Var 0))))
                    (App (Var 1) 
                         (Pred (Pred (Var 0))))))))
-fibτ : ∘ ⊢ fib ⦂ Nat ⇒ Nat
+fibτ : • ︔ ∘ ⊢ fib ⦂ Nat ⇒ Nat
 fibτ =
   τ-fix
     (τ-lam
@@ -204,5 +204,5 @@ fibτ =
 
 fib10 : Term
 fib10 = App fib (natLit 10)
-fib10τ : ∘ ⊢ fib10 ⦂ Nat
+fib10τ : • ︔ ∘ ⊢ fib10 ⦂ Nat
 fib10τ = τ-app fibτ (natLitTy 10)

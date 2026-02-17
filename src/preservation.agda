@@ -13,9 +13,9 @@ open import lemma
 -- Preservation theorem
 -- If ∘ ⊢ e ⦂ τ and e ↦ e' then ∘ ⊢ e' ⦂ τ
 preservation : ∀ {e e' τ} →
-             (∘ ⊢ e ⦂ τ) →
+             (• ︔ ∘ ⊢ e ⦂ τ) →
              (e ↦ e') →
-             (∘ ⊢ e' ⦂ τ)
+             (• ︔ ∘ ⊢ e' ⦂ τ)
              
 -- Proof by induction on the step relation
 preservation (τ-zero? τ-zero) ss-zero?                      = τ-true
@@ -66,3 +66,10 @@ preservation (τ-case τₑ τₗ τᵣ) (ss-case-inr v)              = subst0-�
 
 -- fix
 preservation (τ-fix {τ = τ} {e = e} τₑ) ss-fix              = subst0-τ τₑ (τ-fix τₑ)
+
+
+-- appT : function steps
+preservation (τ-appT fTy) (ss-appT-func stepf)            = τ-appT (preservation fTy stepf)
+
+-- appT : beta
+preservation (τ-appT (τ-lamT bodyTy)) (ss-appT-beta)  = {!   !}
