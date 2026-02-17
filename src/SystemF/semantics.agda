@@ -60,6 +60,8 @@ open import SystemF.values
 β (Nil τ) s n               = Nil τ
 β (Nil? t) s n              = Nil? (β t s n)
 β (LCons t u) s n           = LCons (β t s n) (β u s n)
+β (First t) s n             = First (β t s n)
+β (Rest t) s n              = Rest (β t s n)
 
 infixl 5 _[_]
 
@@ -92,6 +94,8 @@ t [ s ] = β t s 0
 β' (Nil τ) s n               = Nil (τ #[ s ])
 β' (Nil? t) s n              = Nil? (β' t s n)
 β' (LCons t u) s n           = LCons (β' t s n) (β' u s n)
+β' (First t) s n             = First (β' t s n)
+β' (Rest t) s n              = Rest (β' t s n)
 
 
 infixl 5 _[_]'
@@ -335,3 +339,33 @@ data _↦_ : Term → Term → Set where
                      Valτ τ v → 
              Valτ (List τ) vs → 
              (Nil? (LCons v vs) ↦ False)
+
+    --              e ↦ e'
+    -- -------------------------------------
+    --        first e ↦ first e'
+    ss-first-step : ∀ {e e'} →
+                     (e ↦ e') →
+                     (First e ↦ First e')
+    
+    --             e ↦ e'
+    -- -------------------------------------
+    --        rest e ↦ rest e'
+    ss-rest-step : ∀ {e e'} →
+                   (e ↦ e') →
+                   (Rest e ↦ Rest e')
+
+    --          x val xs val
+    -- -------------------------------------
+    --    first (lcons x xs) ↦ x
+    ss-first : ∀ {τ x xs} →
+                 Valτ τ x → 
+         Valτ (List τ) xs → 
+         (First (LCons x xs) ↦ x)
+  
+    --         x val xs val
+    -- -------------------------------------
+    --    rest (lcons x xs) ↦ xs
+    ss-rest : ∀ {τ x xs} →
+                Valτ τ x →
+        Valτ (List τ) xs →
+          (Rest (LCons x xs) ↦ xs)

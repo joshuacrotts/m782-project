@@ -180,3 +180,19 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     τ-nil? : ∀ {Δ Γ τ e} →
         (Δ ⨟ Γ ⊢ e ⦂ List τ) →
         (Δ ⨟ Γ ⊢ Nil? e ⦂ Bool)
+
+    --  Δ ⨟ Γ ⊢ x : τ     Δ ⨟ Γ ⊢ xs : List τ
+    --  --------------------------------------------
+    --     Δ ⨟ Γ ⊢ first (lcons x xs) : τ
+    τ-first : ∀ {Δ Γ τ e1 e2} →
+                (Δ ⨟ Γ ⊢ e1 ⦂ τ) →
+                (Δ ⨟ Γ ⊢ e2 ⦂ List τ) →
+                (Δ ⨟ Γ ⊢ First (LCons e1 e2) ⦂ τ)
+    
+    -- Δ ⨟ Γ ⊢ x : τ     Δ ⨟ Γ ⊢ xs : List τ
+    -- --------------------------------------------
+    --     Δ ⨟ Γ ⊢ rest (lcons x xs) : List τ
+    τ-rest : ∀ {Δ Γ τ e1 e2} →
+            (Δ ⨟ Γ ⊢ e1 ⦂ τ) →
+       (Δ ⨟ Γ ⊢ e2 ⦂ List τ) →
+       (Δ ⨟ Γ ⊢ Rest (LCons e1 e2) ⦂ List τ)

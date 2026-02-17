@@ -48,6 +48,8 @@ open import SystemF.semantics
 τ-weakening {Γ₁} {Γ₂} (τ-nil)           = τ-nil
 τ-weakening {Γ₁} {Γ₂} (τ-nil? τ)         = τ-nil? (τ-weakening {Γ₁} {Γ₂} τ)
 τ-weakening {Γ₁} {Γ₂} (τ-lcons τ₁ τ₂)   = τ-lcons (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂)
+τ-weakening {Γ₁} {Γ₂} (τ-first τ₁ τ₂)   = τ-first (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂)
+τ-weakening {Γ₁} {Γ₂} (τ-rest τ₁ τ₂)    = τ-rest (τ-weakening {Γ₁} {Γ₂} τ₁) (τ-weakening {Γ₁} {Γ₂} τ₂)
 τ-weakening {Δ} {Γ₁} {Γ₂} (τ-fix {Δ} {Γ} {τ} {e} bodyTy) =
   let
     aa = concat-append {Γ₁} {Γ₂} {τ}
@@ -92,8 +94,10 @@ subst-τ |Γ|≡i (τ-app fTy eTy) vTy   = τ-app (subst-τ |Γ|≡i fTy vTy) (s
 subst-τ |Γ|≡i (τ-inl τ₁) vTy        = τ-inl (subst-τ |Γ|≡i τ₁ vTy)
 subst-τ |Γ|≡i (τ-inr τ₂) vTy        = τ-inr (subst-τ |Γ|≡i τ₂ vTy)
 subst-τ |Γ|≡i (τ-nil) vTy           = τ-nil
-subst-τ |Γ|≡i (τ-nil? τ) vTy         = τ-nil? (subst-τ |Γ|≡i τ vTy)
+subst-τ |Γ|≡i (τ-nil? τ) vTy        = τ-nil? (subst-τ |Γ|≡i τ vTy)
 subst-τ |Γ|≡i (τ-lcons τ₁ τ₂) vTy   = τ-lcons (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy)
+subst-τ |Γ|≡i (τ-first τ₁ τ₂) vTy   = τ-first (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy)
+subst-τ |Γ|≡i (τ-rest τ₁ τ₂) vTy    = τ-rest (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy)
 subst-τ {Γ} {i} {τ₁} {τ₂} {body = Fix τ e} {v = v} |Γ|≡i
         (τ-fix {τ = τ} {e = e} bodyTy) vTy =
   let

@@ -31,6 +31,6 @@ data Term : Set where
     Nil     : τ → Term
     Nil?    : Term → Term
     LCons   : Term → Term → Term
-    -- First : τ → Term → Term
-    -- Rest  : τ → Term → Term
+    First   : Term → Term
+    Rest    : Term → Term
 
