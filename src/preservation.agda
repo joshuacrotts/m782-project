@@ -51,7 +51,7 @@ preservation (τ-app fTy eTy) (ss-app-func stepf)            = τ-app (preservat
 preservation (τ-app fTy eTy) (ss-app-arg stepe)             = τ-app fTy (preservation eTy stepe)
 
 -- app: beta
-preservation (τ-app (τ-lam bodyTy) vTy) (ss-app-beta vVal)  = subst0-τ bodyTy vTy
+preservation (τ-app (τ-lam ΔTy bodyTy) vTy) (ss-app-beta vVal)  = subst0-τ bodyTy vTy
 
 -- inl: steps
 preservation (τ-inl τ₁) (ss-inl-step step)                  = τ-inl (preservation τ₁ step)
@@ -65,10 +65,10 @@ preservation (τ-case τₑ τₗ τᵣ) (ss-case-inl v)              = subst0-�
 preservation (τ-case τₑ τₗ τᵣ) (ss-case-inr v)              = subst0-τ-inr τᵣ τₑ
 
 -- fix
-preservation (τ-fix {τ = τ} {e = e} τₑ) ss-fix              = subst0-τ τₑ (τ-fix τₑ)
+preservation (τ-fix {τ = τ} {e = e} ΔTy τₑ) ss-fix              = subst0-τ τₑ (τ-fix ΔTy τₑ)
 
 -- appT : function steps
-preservation (τ-appT fTy) (ss-appT-func stepf)            = τ-appT (preservation fTy stepf)
+preservation (τ-appT ΔTy fTy) (ss-appT-func stepf)            = τ-appT ΔTy (preservation fTy stepf)
 
 -- appT : beta
-preservation (τ-appT (τ-lamT bodyTy)) (ss-appT-beta)  = {!   !}
+preservation (τ-appT ΔTy (τ-lamT bodyTy)) (ss-appT-beta)  = {!   !}

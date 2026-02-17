@@ -1,7 +1,7 @@
 module SystemF.context where
 
 open import Data.Maybe using (Maybe; just; nothing)
-open import Data.Nat using (ℕ; zero; suc; _≤_; _<_; z<s; s<s; s≤s)
+open import Data.Nat using (ℕ; zero; suc; _≤_; _<_; z<s; s<s; s≤s; _<ᵇ_)
 open import Data.Nat.Properties using (≤-pred)
 open import Data.Bool using (true; false) renaming (Bool to 𝔹)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; trans; sym; cong)
@@ -123,3 +123,40 @@ TypeContext = ℕ
 infixl 5 _,★
 _,★ : TypeContext → TypeContext
 _,★ = suc
+
+
+infixr 4 _++'_
+_++'_ : TypeContext → TypeContext → TypeContext
+_++'_ zero Δ₂ = Δ₂
+_++'_ (suc Δ₁) Δ₂ = suc (Δ₁ ++' Δ₂)
+
+
+
+
+lookup' : ℕ → TypeContext → Maybe τ
+lookup' n Δ with n <ᵇ Δ
+... | true  = just (TVar n)
+... | false = nothing 
+
+
+concat-id' : ∀ (Δ) →  (Δ ++' •) ≡ Δ
+concat-id' zero = refl
+concat-id' (suc Δ) = cong suc (concat-id' Δ)
+
+
+lookup'-down : ∀ {n Δ} → lookup' (suc n) (suc Δ) ≡ just (TVar (suc n)) → lookup' n Δ ≡ just (TVar n)
+lookup'-down {n} {Δ} eq with n <ᵇ Δ
+... | true = refl
+... | false = case eq of λ ()
+
+lookup'-size : ∀ {Δ n} → lookup' n Δ ≡ just (TVar n) → n < Δ
+lookup'-size {zero} lookupN = case lookupN of λ ()
+lookup'-size {suc Δ} {zero} _ = z<s
+lookup'-size {suc Δ} {suc n} lookupN = s<s (lookup'-size {Δ} {n} (lookup'-down {n} {Δ} lookupN))
+
+
+
+
+
+-- lookup'-rest : ∀ {Δ₁ Δ₂ i} → lookup' i Δ₂ ≡ just (TVar i) → lookup' i (Δ₁ ++' Δ₂) ≡ just (TVar i)
+-- lookup'-rest {Δ₁} {Δ₂} {i} i<|Δ₂| = {!   !}

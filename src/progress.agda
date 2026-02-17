@@ -80,7 +80,7 @@ progress (τ-snd {e = e} {τ1 = τ1} {τ2 = τ2} τ₁ₓ₂) with progress τ�
 
 
 -- lam case
-progress (τ-lam _) = inj₁ (vτ-lam)
+progress (τ-lam ΔTy _) = inj₁ (vτ-lam)
 
 
 -- app case
@@ -108,13 +108,13 @@ progress (τ-case {e = e} {eₗ = eₗ} {eᵣ = eᵣ} τₑ τₗTy τᵣTy) wit
 ... | inj₁ (vτ-inr {v = v} vVal) = inj₂ (eᵣ [ v ] , ss-case-inr vVal)
 
 -- fix case
-progress (τ-fix {τ = τ} {e = e} τₑ) = inj₂ ( e [ Fix τ e ] , ss-fix)
+progress (τ-fix {τ = τ} {e = e} ΔTy τₑ) = inj₂ ( e [ Fix τ e ] , ss-fix)
 
 -- lamT case
 progress (τ-lamT tf) = inj₁ (vτ-lamT)
 
 -- appT case
-progress (τ-appT {f = f} {τ1 = τ1} {τ2 = τ2} tf) with progress tf
+progress (τ-appT {f = f} {τ1 = τ1} {τ2 = τ2} ΔTy tf) with progress tf
 ... | inj₂ (f' , stepf) =
       inj₂ (AppT f' τ2 , ss-appT-func stepf)
       

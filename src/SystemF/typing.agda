@@ -11,6 +11,21 @@ open import SystemF.context
 
 -- Typing judgments--
 
+infix 4 _⊢_ty
+
+data _⊢_ty : TypeContext → τ → Set where
+
+  ty-unit : ∀ {Δ} → Δ ⊢ Unit ty
+  ty-nat : ∀ {Δ} → Δ ⊢ Nat ty
+  ty-bool : ∀ {Δ} → Δ ⊢ Bool ty
+  ty-var : ∀ {Δ n} → lookup' n Δ ≡ just (TVar n) → Δ ⊢ TVar n ty
+  ty-prod : ∀ {Δ τ1 τ2} → Δ ⊢ τ1 ty → Δ ⊢ τ2 ty → Δ ⊢ (τ1 × τ2) ty
+  ty-sum : ∀ {Δ τ1 τ2} → Δ ⊢ τ1 ty → Δ ⊢ τ2 ty → Δ ⊢ (τ1 + τ2) ty
+  ty-arr : ∀ {Δ τ1 τ2} → Δ ⊢ τ1 ty → Δ ⊢ τ2 ty → Δ ⊢ (τ1 ⇒ τ2) ty
+  ty-all : ∀ {Δ τ} → Δ ,★ ⊢ τ ty → Δ ⊢ (∀' τ) ty
+
+
+
 infix 4 _⨟_⊢_⦂_
 
 data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
@@ -99,6 +114,7 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     -- ---------------------------
     --  Δ ⨟ Γ ⊢ lam e ⦂ τ1 ⇒ τ2
     τ-lam : ∀ {Δ Γ τ1 τ2 e } → 
+         Δ ⊢ τ1 ty →
          (Δ ⨟ Γ , τ1 ⊢ e ⦂ τ2) → 
          (Δ ⨟ Γ ⊢ (Lam e) ⦂ τ1 ⇒ τ2)
 
@@ -139,6 +155,7 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     -- --------------------------------------
     --     Δ ⨟ Γ ⊢ fix τ e ⦂ τ
     τ-fix : ∀ {Δ Γ τ e} → 
+      Δ ⊢ τ ty →
       (Δ ⨟ Γ , τ ⊢ e ⦂ τ) → 
       (Δ ⨟ Γ ⊢ Fix τ e ⦂ τ)
 
@@ -153,6 +170,7 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     --      Δ , α ⨟ Γ  ⊢ e ⦂ τ 
     -- --------------------------------------
     --     Δ ⨟ Γ ⊢ lamT τ e ⦂ τ
-    τ-appT : ∀ {Δ Γ f τ1 τ2} → 
+    τ-appT : ∀ {Δ Γ f τ1 τ2} →    
+          Δ ⊢ τ2 ty →
           (Δ ⨟ Γ ⊢ f ⦂ ∀' τ1) →  
           (Δ ⨟ Γ ⊢ AppT f τ2 ⦂ τ1 #[ τ2 ])
