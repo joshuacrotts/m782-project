@@ -55,11 +55,45 @@ open import SystemF.values
 β (Inr t) s n               = Inr (β t s n)
 β (Case sum left right) s n = Case (β sum s n) (β left s (suc n)) (β right s (suc n))
 β (Fix τ t) s n             = Fix τ (β t s (suc n))
+β (LamT t) s n             = LamT (β t s n)
+β (AppT t τ) s n           = AppT (β t s n) τ
 
 infixl 5 _[_]
 
 _[_] : Term → Term →  Term
 t [ s ] = β t s 0
+
+
+
+β' : Term → τ → ℕ → Term
+β' (Var m) τ n = Var m
+β' (Lam t) s n               = Lam (β' t s (suc n)) 
+β' (App t u) s n             = App (β' t s n) (β' u s n)
+β' True s n                  = True   
+β' False s n                 = False
+β' Zero s n                  = Zero
+β' ⋆ s n                     = ⋆
+β' (Suc t) s n               = Suc (β' t s n)
+β' (Pred t) s n              = Pred (β' t s n)
+β' (Zero? t) s n             = Zero? (β' t s n)
+β' (If t u v) s n            = If (β' t s n) (β' u s n) (β' v s n)
+β' (Cons t u) s n            = Cons (β' t s n) (β' u s n)
+β' (Fst t) s n               = Fst (β' t s n)
+β' (Snd t) s n               = Snd (β' t s n)
+β' (Inl t) s n               = Inl (β' t s n)
+β' (Inr t) s n               = Inr (β' t s n)
+β' (Case sum left right) s n = Case (β' sum s n) (β' left s n) (β' right s n)
+β' (Fix τ t) s n             = Fix τ (β' t s n)
+β' (LamT t) s n             = LamT (β' t s (suc n))
+β' (AppT t τ) s n = AppT (β' t s n) (τ #[ s ])
+
+
+infixl 5 _[_]'
+
+_[_]' : Term → τ →  Term
+t [ s ]' = β' t s 0
+
+
 
 
 infix 3 _↦_
@@ -240,3 +274,20 @@ data _↦_ : Term → Term → Set where
     --   fix τ e ↦ e [fix τ e / x]
     ss-fix : ∀ {τ e} → 
             (Fix τ e ↦ e [ Fix τ e ])
+
+
+
+
+    --   f ↦ f'
+    -- ----------------------------
+    --   appT f τ ↦ appT f' τ
+    ss-appT-func : ∀ {f f' τ} → 
+                    (f ↦ f') → 
+                    (AppT f τ ↦ AppT f' τ)
+
+
+    -- --   v1 val
+    -- -- ----------------------------
+    -- -- appT (lamT body) τ1 ↦ body [τ1 / α]
+    ss-appT-beta : ∀ {body τ1} → 
+                      (AppT (LamT body) τ1 ↦ body [ τ1 ]')

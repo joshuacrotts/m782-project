@@ -26,4 +26,6 @@ data Term : Set where
     Inr     : Term → Term
     Case    : Term → Term → Term → Term
     Fix     : τ → Term → Term
+    LamT    : Term → Term
+    AppT    : Term → τ → Term
 

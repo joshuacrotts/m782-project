@@ -18,7 +18,7 @@ open import preservation
 open import lemma using (weaken-closed)
 
 import SystemF.context as C
-open C using (Context; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
+open C using (TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
 
 
 --

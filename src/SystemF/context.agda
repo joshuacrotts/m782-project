@@ -12,36 +12,36 @@ open import SystemF.terms
 
 
 --
--- Term Context for typing.
+-- Term TermContext for typing.
 -- 
 infixl 5 _,_
 
-data Context : Set where
-    ∘ : Context
-    _,_ : Context →  τ → Context
+data TermContext : Set where
+    ∘ : TermContext
+    _,_ : TermContext →  τ → TermContext
 
 
 infixr 4 _∷_
-_∷_ : τ → Context → Context
+_∷_ : τ → TermContext → TermContext
 _∷_ τ ∘ = ∘ , τ
 _∷_ τ (Γ , τ') = (τ ∷ Γ) , τ'
 
 
 
 infixr 4 _++_
-_++_ : Context → Context → Context
+_++_ : TermContext → TermContext → TermContext
 _++_ ∘ Γ  = Γ
 _++_ (Γ₁ , τ) Γ₂  = Γ₁ ++ (τ ∷ Γ₂ )
 
 
 
-lookup : ℕ → Context → Maybe τ
+lookup : ℕ → TermContext → Maybe τ
 lookup _ ∘             = nothing 
 lookup zero (Γ , τ)    = just τ
 lookup (suc n) (Γ , τ) = lookup n Γ
 
 
-size : Context → ℕ
+size : TermContext → ℕ
 size ∘ = zero
 size (Γ , τ) = suc (size Γ)
 
@@ -106,3 +106,20 @@ concat-append {Γ₁ , τ₂} {Γ₂} {τ₁} = concat-append {Γ₁} {τ₂ ∷
 concat-id : ∀ (Γ) →  (Γ ++ ∘) ≡ Γ
 concat-id ∘ = refl
 concat-id (Γ , τ) = trans (concat-append {Γ} {∘} {τ}) (cong (_, τ) (concat-id Γ))
+
+
+
+
+-- The type context in System F is simply a count of how many
+-- type variables are in scope (de Bruijn indexed).
+TypeContext : Set
+TypeContext = ℕ
+
+-- Empty type context
+• : TypeContext
+• = zero
+
+-- Extend the type context with a new type variable
+infixl 5 _,★
+_,★ : TypeContext → TypeContext
+_,★ = suc

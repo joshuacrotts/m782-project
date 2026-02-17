@@ -14,7 +14,7 @@ open import SystemF.typing
 open import SystemF.semantics
 
 import SystemF.context as C
-open C using (Context; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
+open C using (TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
 
 -- Progress theorem
 -- If ∘ ⊢ e ⦂ τ then either e Val or e steps to e'.
