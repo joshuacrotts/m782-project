@@ -94,13 +94,13 @@ ty-weaken {Δ₁} {Δ₂} (ty-all τ) = ty-all {!   !}
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-snd τ₁×₂) = τ-snd (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₁×₂)
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-app fTy eTy) = τ-app (Δ-weaken {Δ₁} {Δ₂} {Γ} fTy) (Δ-weaken {Δ₁} {Δ₂} {Γ} eTy)
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-appT ΔTy bodyTy) = τ-appT (ty-weaken ΔTy) (Δ-weaken {Δ₁} {Δ₂} {Γ} bodyTy)
--- Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-inl τ₁) = τ-inl (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₁)
--- Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-inr τ₂) = τ-inr (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₂)
+Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-inl τ₁) = τ-inl (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₁)
+Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-inr τ₂) = τ-inr (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₂)
 -- Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-fix {Δ} {Γ} {τ} {e} bodyTy) = τ-fix (Δ-weaken {Δ₁} {Δ₂} {Γ , τ} bodyTy)
--- Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-var lookupN) = τ-var lookupN
--- Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-case {Δ} {Γ₂} {leftTy} {rightTy} {τ₃} {τₑ} {el} {er} e' τ₁ τ₂) = {!   !}
+Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-var lookupN) = τ-var lookupN
+Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-case {Δ} {Γ₂} {leftTy} {rightTy} {τ₃} {τₑ} {el} {er} e' τ₁ τ₂) = {!   !}
 -- Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-lam {Δ'} {Γ'} {τ₁} ΔTy bodyTy) = τ-lam ΔTy (Δ-weaken {Δ₁} {Δ₂} {Γ , τ₁} bodyTy)
--- Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-lamT {Δ'} {Γ'} {τ₁} {e} bodyTy) = τ-lamT ?
+Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-lamT {Δ'} {Γ'} {τ₁} {e} bodyTy) = τ-lamT {!!}
 Δ-weaken _ = {!   !}
 
 
