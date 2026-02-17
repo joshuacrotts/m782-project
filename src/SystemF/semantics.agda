@@ -276,8 +276,6 @@ data _↦_ : Term → Term → Set where
             (Fix τ e ↦ e [ Fix τ e ])
 
 
-
-
     --   f ↦ f'
     -- ----------------------------
     --   appT f τ ↦ appT f' τ

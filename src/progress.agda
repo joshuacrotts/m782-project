@@ -114,5 +114,10 @@ progress (τ-fix {τ = τ} {e = e} τₑ) = inj₂ ( e [ Fix τ e ] , ss-fix)
 progress (τ-lamT tf) = inj₁ (vτ-lamT)
 
 -- appT case
-progress (τ-appT tf) = {!   !}
+progress (τ-appT {f = f} {τ1 = τ1} {τ2 = τ2} tf) with progress tf
+... | inj₂ (f' , stepf) =
+      inj₂ (AppT f' τ2 , ss-appT-func stepf)
+      
+... | inj₁ (vτ-lamT {body = body}) =
+      inj₂ (body [ τ2 ]' , ss-appT-beta)
 

@@ -67,7 +67,6 @@ preservation (τ-case τₑ τₗ τᵣ) (ss-case-inr v)              = subst0-�
 -- fix
 preservation (τ-fix {τ = τ} {e = e} τₑ) ss-fix              = subst0-τ τₑ (τ-fix τₑ)
 
-
 -- appT : function steps
 preservation (τ-appT fTy) (ss-appT-func stepf)            = τ-appT (preservation fTy stepf)
 
