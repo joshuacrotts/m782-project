@@ -18,7 +18,7 @@ infixl 5 _,_
 
 data TermContext : Set where
     ∘ : TermContext
-    _,_ : TermContext →  τ → TermContext
+    _,_ : TermContext → τ → TermContext
 
 
 infixr 4 _∷_

@@ -55,8 +55,8 @@ open import SystemF.values
 β (Inr t) s n               = Inr (β t s n)
 β (Case sum left right) s n = Case (β sum s n) (β left s (suc n)) (β right s (suc n))
 β (Fix τ t) s n             = Fix τ (β t s (suc n))
-β (LamT t) s n             = LamT (β t s n)
-β (AppT t τ) s n           = AppT (β t s n) τ
+β (LamT t) s n              = LamT (β t s n)
+β (AppT t τ) s n            = AppT (β t s n) τ
 
 infixl 5 _[_]
 

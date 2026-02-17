@@ -110,9 +110,8 @@ progress (τ-case {e = e} {eₗ = eₗ} {eᵣ = eᵣ} τₑ τₗTy τᵣTy) wit
 -- fix case
 progress (τ-fix {τ = τ} {e = e} τₑ) = inj₂ ( e [ Fix τ e ] , ss-fix)
 
-
 -- lamT case
-progress (τ-lamT tf) = {!   !}
+progress (τ-lamT tf) = inj₁ (vτ-lamT)
 
 -- appT case
 progress (τ-appT tf) = {!   !}
