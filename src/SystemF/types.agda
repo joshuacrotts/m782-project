@@ -45,3 +45,14 @@ infixl 5 _#[_]
 
 _#[_] : τ → τ → τ
 t #[ σ ] = β# t σ 0
+
+
+inc-τ : τ → τ
+inc-τ Unit = Unit
+inc-τ Nat = Nat
+inc-τ Bool = Bool
+inc-τ (TVar n) = TVar (suc n)
+inc-τ (τ1 × τ2) = (inc-τ τ1) × (inc-τ τ2)
+inc-τ (τ1 + τ2) = (inc-τ τ1) + (inc-τ τ2)
+inc-τ (τ1 ⇒ τ2) = (inc-τ τ1) ⇒ (inc-τ τ2)
+inc-τ (∀' τ1) = ∀' (inc-τ τ1)

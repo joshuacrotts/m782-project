@@ -168,3 +168,5 @@ lookup'-rest : ∀ {Δ i} → i < Δ → lookup' i Δ ≡ just (TVar i)
 lookup'-rest {Δ} {i} i<|Δ| with i <ᵇ Δ | <⇒<ᵇ i<|Δ|
 ... | true  | _ = refl
 ... | false | ()
+
+

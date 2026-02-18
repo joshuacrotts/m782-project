@@ -25,6 +25,10 @@ data _⊢_ty : TypeContext → τ → Set where
   ty-all : ∀ {Δ τ} → Δ ,★ ⊢ τ ty → Δ ⊢ (∀' τ) ty
 
 
+inc-Γ : TermContext → TermContext 
+inc-Γ ∘ = ∘
+inc-Γ (Γ , τ) = (inc-Γ Γ) , (inc-τ τ)
+
 
 infix 4 _⨟_⊢_⦂_
 
@@ -167,7 +171,7 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     -- --------------------------------------
     --     Δ ⨟ Γ ⊢ lamT τ e ⦂ ∀' τ
     τ-lamT : ∀ {Δ Γ τ e} → 
-      (Δ ,★ ⨟ Γ ⊢ e ⦂ τ) → 
+      (Δ ,★ ⨟ (inc-Γ Γ) ⊢ e ⦂ τ) → 
       (Δ ⨟ Γ ⊢ LamT e ⦂ ∀' τ)
 
     --      Δ , α ⨟ Γ  ⊢ e ⦂ τ 
