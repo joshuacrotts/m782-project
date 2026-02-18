@@ -47,12 +47,18 @@ _#[_] : τ → τ → τ
 t #[ σ ] = β# t σ 0
 
 
+inc-τ-i : τ → ℕ → τ
+inc-τ-i Unit _ = Unit
+inc-τ-i Nat _ = Nat
+inc-τ-i Bool _ = Bool
+inc-τ-i (TVar n) i with n <ᵇ i
+... | true  = TVar n
+... | false = TVar (suc n)
+inc-τ-i (τ1 × τ2) i = (inc-τ-i τ1 i) × (inc-τ-i τ2 i)
+inc-τ-i (τ1 + τ2) i = (inc-τ-i τ1 i) + (inc-τ-i τ2 i)
+inc-τ-i (τ1 ⇒ τ2) i = (inc-τ-i τ1 i) ⇒ (inc-τ-i τ2 i)
+inc-τ-i (∀' τ1) i = ∀' (inc-τ-i τ1 (suc i))
+
+
 inc-τ : τ → τ
-inc-τ Unit = Unit
-inc-τ Nat = Nat
-inc-τ Bool = Bool
-inc-τ (TVar n) = TVar (suc n)
-inc-τ (τ1 × τ2) = (inc-τ τ1) × (inc-τ τ2)
-inc-τ (τ1 + τ2) = (inc-τ τ1) + (inc-τ τ2)
-inc-τ (τ1 ⇒ τ2) = (inc-τ τ1) ⇒ (inc-τ τ2)
-inc-τ (∀' τ1) = ∀' (inc-τ τ1)
+inc-τ t = inc-τ-i t 0
