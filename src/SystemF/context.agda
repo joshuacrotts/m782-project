@@ -2,7 +2,7 @@ module SystemF.context where
 
 open import Data.Maybe using (Maybe; just; nothing)
 open import Data.Nat using (ℕ; zero; suc; _≤_; _<_; z<s; s<s; s≤s; _<ᵇ_)
-open import Data.Nat.Properties using (≤-pred)
+open import Data.Nat.Properties using (≤-pred; <⇒<ᵇ)
 open import Data.Bool using (true; false) renaming (Bool to 𝔹)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; trans; sym; cong)
 open import Function using (case_of_)
@@ -119,10 +119,18 @@ TypeContext = ℕ
 • : TypeContext
 • = zero
 
+★ : TypeContext
+★ = suc •
+
 -- Extend the type context with a new type variable
 infixl 5 _,★
 _,★ : TypeContext → TypeContext
 _,★ = suc
+
+
+infixl 5 ★++_
+★++_ : TypeContext → TypeContext
+★++_ = suc
 
 
 infixr 4 _++'_
@@ -156,7 +164,7 @@ lookup'-size {suc Δ} {suc n} lookupN = s<s (lookup'-size {Δ} {n} (lookup'-down
 
 
 
-
-
--- lookup'-rest : ∀ {Δ₁ Δ₂ i} → lookup' i Δ₂ ≡ just (TVar i) → lookup' i (Δ₁ ++' Δ₂) ≡ just (TVar i)
--- lookup'-rest {Δ₁} {Δ₂} {i} i<|Δ₂| = {!   !}
+lookup'-rest : ∀ {Δ i} → i < Δ → lookup' i Δ ≡ just (TVar i)
+lookup'-rest {Δ} {i} i<|Δ| with i <ᵇ Δ | <⇒<ᵇ i<|Δ|
+... | true  | _ = refl
+... | false | ()

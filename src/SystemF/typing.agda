@@ -35,6 +35,7 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     -- Δ ⨟ Γ, x ⊢ x ⦂ τ
     -- nameless vars
     τ-var :           ∀ {Δ Γ n τ} → 
+            Δ ⊢ τ ty →
             lookup n Γ ≡ just τ → Δ ⨟ Γ ⊢ Var n ⦂ τ
 
     --
@@ -130,13 +131,15 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     -- ---------------------------
     --     Δ ⨟ Γ ⊢ inl e ⦂ τ₁ + τ₂
     τ-inl : ∀ {Δ Γ e τ1 τ2} → 
+            Δ ⊢ τ2 ty → 
              (Δ ⨟ Γ ⊢ e ⦂ τ1) → 
              (Δ ⨟ Γ ⊢ Inl e ⦂ τ1 + τ2)
     
     --         Δ ⨟ Γ ⊢ e ⦂ τ₂         
     -- ---------------------------
     --      Δ ⨟ Γ ⊢ inr e ⦂ τ₁ + τ₂
-    τ-inr : ∀ {Δ Γ e τ1 τ2} → 
+    τ-inr : ∀ {Δ Γ e τ1 τ2} →
+             Δ ⊢ τ1 ty → 
              (Δ ⨟ Γ ⊢ e ⦂ τ2) → 
              (Δ ⨟ Γ ⊢ Inr e ⦂ τ1 + τ2)
     
