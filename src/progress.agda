@@ -91,13 +91,13 @@ progress (τ-app {f = f} {e = e} {τ1 = τ1} {τ2 = τ2} tf te) with progress tf
 ...     | inj₂ (e' , stepe)     = inj₂ (App f e' , ss-app-arg stepe)                             -- if e steps then app f e steps to app f e'
 
 -- inl case
-progress (τ-inl {τ1 = τ1} {τ2 = τ2} τ₁) with progress τ₁
+progress (τ-inl {τ1 = τ1} {τ2 = τ2} τ₂ty τ₁) with progress τ₁
 ... | inj₁ v              = inj₁ (vτ-inl v)   -- if e is a value, then inl e is a value
 ... | inj₂ (e' , step)    = inj₂ (Inl e' , ss-inl-step step)
 
 
 -- inr case
-progress (τ-inr {τ1 = τ1} {τ2 = τ2} τ₂) with progress τ₂
+progress (τ-inr {τ1 = τ1} {τ2 = τ2} τ₁ty τ₂) with progress τ₂
 ... | inj₁ v              = inj₁ (vτ-inr v)
 ... | inj₂ (e' , step)    = inj₂ (Inr e' , ss-inr-step step)
 

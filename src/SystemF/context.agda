@@ -152,6 +152,17 @@ concat-id' zero = refl
 concat-id' (suc Δ) = cong suc (concat-id' Δ)
 
 
+sucΔ : ∀ {Δ} → (Δ ,★) ≡ (Δ ++' ★)
+sucΔ {Δ} with Δ
+... | zero = refl
+... | suc Δ' = cong suc (sucΔ {Δ'})
+
+
+Δ₁++'Δ₂,★ : ∀ {Δ₁ Δ₂} → (Δ₁ ++' Δ₂) ,★ ≡ (Δ₁ ++' Δ₂ ,★)
+Δ₁++'Δ₂,★ {Δ₁} {Δ₂} with Δ₁
+... | zero = refl
+... | suc Δ₁' = cong suc (Δ₁++'Δ₂,★ {Δ₁'} {Δ₂})
+
 lookup'-down : ∀ {n Δ} → lookup' (suc n) (suc Δ) ≡ just (TVar (suc n)) → lookup' n Δ ≡ just (TVar n)
 lookup'-down {n} {Δ} eq with n <ᵇ Δ
 ... | true = refl

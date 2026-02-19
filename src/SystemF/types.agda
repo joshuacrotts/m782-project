@@ -24,29 +24,6 @@ data τ : Set where
 
 
 
--- Type substitution: β σ n τ  replaces TVar n with σ in τ
-β# : τ → τ → ℕ → τ
-β# Unit σ n = Unit
-β# Nat σ n = Nat
-β# Bool σ n = Bool
-β# (TVar m) σ n with m ≡ᵇ n | m <ᵇ n
-... | true  | _ = σ
-... | false | true  = TVar m 
-... | false | false = TVar (pred m) 
-β# (τ₁ × τ₂) σ n = (β# τ₁ σ n) × (β# τ₂ σ n)
-β# (τ₁ + τ₂) σ n = (β# τ₁ σ n) + (β# τ₂ σ n)
-β# (τ₁ ⇒ τ₂) σ n = (β# τ₁ σ n) ⇒ (β# τ₂ σ n)
-β# (∀' τ₁) σ n = ∀' (β# τ₁ σ (suc n))
-
-
-
-
-infixl 5 _#[_]
-
-_#[_] : τ → τ → τ
-t #[ σ ] = β# t σ 0
-
-
 inc-τ-i : τ → ℕ → τ
 inc-τ-i Unit _ = Unit
 inc-τ-i Nat _ = Nat
@@ -62,3 +39,27 @@ inc-τ-i (∀' τ1) i = ∀' (inc-τ-i τ1 (suc i))
 
 inc-τ : τ → τ
 inc-τ t = inc-τ-i t 0
+
+
+-- Type substitution: β σ n τ  replaces TVar n with σ in τ
+β# : τ → τ → ℕ → τ
+β# Unit σ n = Unit
+β# Nat σ n = Nat
+β# Bool σ n = Bool
+β# (TVar m) σ n with m ≡ᵇ n | m <ᵇ n
+... | true  | _ = σ
+... | false | true  = TVar m 
+... | false | false = TVar (pred m) 
+β# (τ₁ × τ₂) σ n = (β# τ₁ σ n) × (β# τ₂ σ n)
+β# (τ₁ + τ₂) σ n = (β# τ₁ σ n) + (β# τ₂ σ n)
+β# (τ₁ ⇒ τ₂) σ n = (β# τ₁ σ n) ⇒ (β# τ₂ σ n)
+β# (∀' τ₁) σ n = ∀' (β# τ₁ (inc-τ σ) (suc n))
+
+
+
+
+infixl 5 _#[_]
+
+_#[_] : τ → τ → τ
+t #[ σ ] = β# t σ 0
+
