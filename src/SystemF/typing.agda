@@ -3,6 +3,7 @@ module SystemF.typing where
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Maybe using (Maybe; just; nothing)
 open import Data.Bool using (true; false)
+open import Data.Nat using (ℕ; suc; pred; _≡ᵇ_; _<ᵇ_)
 
 open import SystemF.terms
 open import SystemF.types
@@ -29,6 +30,10 @@ inc-Γ : TermContext → TermContext
 inc-Γ ∘ = ∘
 inc-Γ (Γ , τ) = (inc-Γ Γ) , (inc-τ τ)
 
+
+βᵧ : TermContext → τ → ℕ → TermContext
+βᵧ ∘ τ₂ i = ∘
+βᵧ (Γ , τ₁) τ₂ i = (βᵧ Γ τ₂ i) , (β# τ₁ τ₂ i)
 
 infix 4 _⨟_⊢_⦂_
 
