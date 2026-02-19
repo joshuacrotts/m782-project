@@ -17,7 +17,7 @@ data τ : Set where
     Bool   : τ
     TVar   : ℕ → τ        -- type variable (de Bruijn index)
     _×_    : τ → τ → τ
-    _+_    : τ → τ → τ
+    _⨁_    : τ → τ → τ
     _⇒_    : τ → τ → τ
     ∀'_    : τ → τ         -- ∀α. body  (α is implicitly index 0 in body)
 
@@ -32,7 +32,7 @@ inc-τ-i (TVar n) i with n <ᵇ i
 ... | true  = TVar n
 ... | false = TVar (suc n)
 inc-τ-i (τ1 × τ2) i = (inc-τ-i τ1 i) × (inc-τ-i τ2 i)
-inc-τ-i (τ1 + τ2) i = (inc-τ-i τ1 i) + (inc-τ-i τ2 i)
+inc-τ-i (τ1 ⨁ τ2) i = (inc-τ-i τ1 i) ⨁ (inc-τ-i τ2 i)
 inc-τ-i (τ1 ⇒ τ2) i = (inc-τ-i τ1 i) ⇒ (inc-τ-i τ2 i)
 inc-τ-i (∀' τ1) i = ∀' (inc-τ-i τ1 (suc i))
 
@@ -51,7 +51,7 @@ inc-τ t = inc-τ-i t 0
 ... | false | true  = TVar m 
 ... | false | false = TVar (pred m) 
 β# (τ₁ × τ₂) σ n = (β# τ₁ σ n) × (β# τ₂ σ n)
-β# (τ₁ + τ₂) σ n = (β# τ₁ σ n) + (β# τ₂ σ n)
+β# (τ₁ ⨁ τ₂) σ n = (β# τ₁ σ n) ⨁ (β# τ₂ σ n)
 β# (τ₁ ⇒ τ₂) σ n = (β# τ₁ σ n) ⇒ (β# τ₂ σ n)
 β# (∀' τ₁) σ n = ∀' (β# τ₁ (inc-τ σ) (suc n))
 
