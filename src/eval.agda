@@ -115,8 +115,17 @@ addτ =
             (τ-app 
               (τ-app 
                 (τ-var (ty-arr ty-nat (ty-arr ty-nat ty-nat)) refl) 
-                (τ-pred (τ-var  ty-nat refl)))
+                (τ-pred (τ-var ty-nat refl)))
               (τ-var ty-nat refl))))))
+
+add34 : Term
+add34 = App (App add (natLit 3)) (natLit 4)
+
+add34τ : • ⨟ ∘ ⊢ add34 ⦂ Nat
+add34τ = τ-app (τ-app addτ (natLitTy 3)) (natLitTy 4)
+
+evalAdd34 : Maybe ℕ
+evalAdd34 = evalNat add34τ 100 -- Should return just 7
 
 -- -- Natural number multiplication.
 -- mul : Term
