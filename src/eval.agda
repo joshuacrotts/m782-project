@@ -268,11 +268,36 @@ listOf3τ =
       (τ-lcons (natLitTy 3)
         (τ-nil ty-nat)))
 
+listOf4Bools : Term
+listOf4Bools =
+  LCons True
+    (LCons False
+      (LCons True
+        (LCons False
+          (Nil Bool))))
+
+listOf4Boolsτ : • ⨟ ∘ ⊢ listOf4Bools ⦂ List Bool
+listOf4Boolsτ =
+  τ-lcons τ-true
+    (τ-lcons τ-false
+      (τ-lcons τ-true
+        (τ-lcons τ-false
+          (τ-nil ty-bool))))
+
 length-listOf3τ : • ⨟ ∘ ⊢ App (AppT length Nat) listOf3 ⦂ Nat
 length-listOf3τ =
   τ-app
     (τ-appT ty-nat lengthτ)   -- swapped!
     listOf3τ
 
+length-listOf4Boolsτ : • ⨟ ∘ ⊢ App (AppT length Bool) listOf4Bools ⦂ Nat
+length-listOf4Boolsτ =
+  τ-app
+    (τ-appT ty-bool lengthτ)   -- swapped!
+    listOf4Boolsτ
+
 evalLengthListOf3 : Maybe ℕ
 evalLengthListOf3 = evalNat length-listOf3τ 100
+
+evalLengthListOf4Bools : Maybe ℕ
+evalLengthListOf4Bools = evalNat length-listOf4Boolsτ 100
