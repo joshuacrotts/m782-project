@@ -5,7 +5,7 @@ module lemma where
 open import Data.Maybe using (Maybe; just; nothing)
 open import Data.Maybe.Properties using (just-injective)
 open import Data.Nat using (ℕ; zero; suc; pred; _+_; _≡ᵇ_; _<ᵇ_; _≤ᵇ_; _<_; _≤_; s≤s; z≤n)
-open import Data.Nat.Properties using (≡ᵇ⇒≡; ≡⇒≡ᵇ; ≤∧≢⇒<; <ᵇ⇒<; ≤ᵇ⇒≤; <⇒<ᵇ; ≤-pred; <-irrefl; <-≤-trans; ≤-reflexive; m≤n⇒m≤1+n)
+open import Data.Nat.Properties using (≡ᵇ⇒≡; ≡⇒≡ᵇ; ≤∧≢⇒<; <ᵇ⇒<; ≤ᵇ⇒≤; <⇒<ᵇ; ≤-pred; <-irrefl; <-≤-trans; ≤-reflexive; m≤n⇒m≤1+n; <-trans; ≮⇒≥)
 open import Data.Bool using (true; false; T)
 open import Data.Bool.Properties using (T?)
 open import Data.Unit using (tt)
@@ -28,6 +28,14 @@ open import SystemF.semantics
 
 <suc⇒≤ : ∀ {m i} → m < suc i → m ≤ i
 <suc⇒≤ {m} {i} m<sucI = ≤-pred m<sucI
+
+≤⇒<suc : ∀ {m i}  → m ≤ i → m < suc i
+≤⇒<suc {m} {i} m≤i = s≤s m≤i
+
+
+<suc⇒pred< : ∀ {n j i} → j < n → n < suc i → pred n < i
+<suc⇒pred< {zero} () _
+<suc⇒pred< {suc n} {j} {i} _ n<si = ≤-pred n<si
 
 
 
@@ -429,30 +437,107 @@ inc-Γᵧ {Γ , τ₁} {τ₂} {i} •⊢τ₂ty
     rewrite (inc-Γᵧ {Γ} {τ₂} {i} •⊢τ₂ty) rewrite (inc-τ-β≡ {τ₁} {τ₂} {i} {0})
     rewrite (inc-τ-no-op z≤n •⊢τ₂ty) rewrite (n+0 {i}) = refl
     
-        
+
+var-subst'-no-op : ∀ {n τ i} → n < i →  (β# (TVar n) τ i) ≡ TVar n
+var-subst'-no-op {n} {τ} {i} n<i with n ≡ᵇ i in n≡ᵇi | n <ᵇ i in n<ᵇi
+... | true | _ = ⊥-elim (<-irrefl (≡ᵇ⇒≡ n i (subst T (sym n≡ᵇi) tt)) n<i)
+... | false | true = refl
+... | false | false = ⊥-elim (subst T n<ᵇi (<⇒<ᵇ n<i))
 
 
+var-subst'-just : ∀ {n τ i} → n ≡ i →  (β# (TVar n) τ i) ≡ τ
+var-subst'-just {n} {τ} {i} n≡i with n ≡ᵇ i in n≡ᵇi
+... | true = refl
+... | false = ⊥-elim (subst T n≡ᵇi (≡⇒≡ᵇ n i n≡i))
+
+
+var-subst'-pred : ∀ {n τ j} → j < n → (β# (TVar n) τ j) ≡ TVar (pred n)
+var-subst'-pred {n} {τ} {j} j<n with n ≡ᵇ j in n≡ᵇj | n <ᵇ j in n<ᵇj
+... | true | _ = ⊥-elim (<-irrefl (sym (≡ᵇ⇒≡ n j (subst T (sym n≡ᵇj) tt))) j<n)
+... | false | true = ⊥-elim (<-irrefl refl (<-trans j<n (<ᵇ⇒< n j (subst T (sym n<ᵇj) tt))))
+... | false | false = refl
+
+
+var-subst'-dec : ∀ {n τ i j} → n ≡ suc i → j < n → (β# (TVar n) τ j) ≡ TVar i
+var-subst'-dec {n} {τ} {i} {j} n≡i' j<n with n ≡ᵇ j in n≡ᵇj | n <ᵇ j in n<ᵇj
+... | true | _ = ⊥-elim (<-irrefl (sym (≡ᵇ⇒≡ n j (subst T (sym n≡ᵇj) tt))) j<n)
+... | false | true = ⊥-elim (<-irrefl refl (<-trans j<n (<ᵇ⇒< n j (subst T (sym n<ᵇj) tt))))
+... | false | false = cong TVar (cong pred n≡i')
+
+<suci : ∀ {i} → i < suc i
+<suci {i} = s≤s (≤-reflexive refl)
 
 -- TODO: 
 -- this lemma should have one last case for discussion.
 -- unfortunately, the TVar case can be tricky since we need to discuss the relation among n, i, j.
 -- as a reminder, these premises MAYBE redundant, and they are subject to future updates.
 β#≡ : ∀ {τ₁ τ₂ τₐ Δ i j} →
-     (Δ ≡ i) → (suc (suc Δ) ⊢ τ₁ ty)  → (suc Δ ⊢ τ₂ ty)  → (Δ ⊢ τₐ ty)  →  
+     (Δ ≡ i) → (j ≤ Δ) → (suc (suc Δ) ⊢ τ₁ ty)  → (suc Δ ⊢ τ₂ ty)  → (• ⊢ τₐ ty)  →  
      β# (β# τ₁ τ₂ j) τₐ i ≡ β# (β# τ₁ τₐ (suc i)) (β# τ₂ τₐ i) j
-β#≡ {τ₁} {τ₂} {τₐ} {Δ} {i} {j} Δ≡i Δ''τ₁ty  Δ'τ₂ty Δτₐty with Δ''τ₁ty  
+β#≡ {τ₁} {τ₂} {τₐ} {Δ} {i} {j} Δ≡i j≤Δ Δ''τ₁ty  Δ'τ₂ty •τₐty with Δ''τ₁ty  
 ... | ty-unit = refl
 ... | ty-nat = refl
 ... | ty-bool = refl
-... | ty-prod τ₂₁ τ₂₂ = cong₂ _×_ (β#≡  Δ≡i τ₂₁  Δ'τ₂ty Δτₐty) (β#≡  Δ≡i  τ₂₂  Δ'τ₂ty Δτₐty)
-... | ty-arr τ₂₁ τ₂₂ = cong₂ _⇒_ (β#≡  Δ≡i τ₂₁  Δ'τ₂ty Δτₐty) (β#≡  Δ≡i  τ₂₂  Δ'τ₂ty Δτₐty)
-... | ty-sum τ₂₁ τ₂₂ = cong₂ _⨁_ (β#≡  Δ≡i τ₂₁  Δ'τ₂ty Δτₐty) (β#≡  Δ≡i  τ₂₂  Δ'τ₂ty Δτₐty)
+... | ty-prod τ₂₁ τ₂₂ = cong₂ _×_ (β#≡  Δ≡i j≤Δ τ₂₁  Δ'τ₂ty •τₐty) (β#≡  Δ≡i j≤Δ  τ₂₂  Δ'τ₂ty •τₐty)
+... | ty-arr τ₂₁ τ₂₂ = cong₂ _⇒_ (β#≡  Δ≡i j≤Δ τ₂₁  Δ'τ₂ty •τₐty) (β#≡  Δ≡i j≤Δ  τ₂₂  Δ'τ₂ty •τₐty)
+... | ty-sum τ₂₁ τ₂₂ = cong₂ _⨁_ (β#≡  Δ≡i j≤Δ τ₂₁  Δ'τ₂ty •τₐty) (β#≡  Δ≡i j≤Δ  τ₂₂  Δ'τ₂ty •τₐty)
 ... | ty-all τall rewrite (inc-τ-β≡ {τ₂} {τₐ} {i} {0}) rewrite (n+0 {i}) =
     let 
         Δ'τ₂'ty = inc-τ-weaken0 Δ'τ₂ty 
-        Δτₐ'ty = inc-τ-weaken0 Δτₐty 
-    in cong ∀'_ (β#≡  {j = suc j} (cong suc Δ≡i) τall  Δ'τ₂'ty  Δτₐ'ty)  
-... | _ = {!   !}
+        •τₐty' = subst (λ z → • ⊢ z ty) (sym (inc-τ-no-op z≤n •τₐty)) •τₐty
+    in cong ∀'_ (β#≡  {j = suc j} (cong suc Δ≡i) (s≤s j≤Δ) τall  Δ'τ₂'ty  •τₐty')  
+... | ty-var {Δ''} {n} lookupN with n ≡ᵇ j in n≡ᵇj 
+... | true = 
+    let n≡j = ≡ᵇ⇒≡ n j (subst T (sym n≡ᵇj) tt)
+        n≤Δ = subst (λ z → z ≤ Δ) (sym n≡j) j≤Δ
+        n≤i = subst (λ z → n ≤ z) Δ≡i n≤Δ
+        n<i' = ≤⇒<suc n≤i
+        stillτₐ = var-subst'-no-op n<i'
+        rhs = var-subst'-just {τ = (β# τ₂ τₐ i)} n≡j
+        rhs' = subst (λ z → (β# z (β# τ₂ τₐ i) j) ≡ (β# τ₂ τₐ i)) (sym stillτₐ) rhs
+    in sym rhs'
+... | false with n <ᵇ j in n<ᵇj
+...             | true = 
+    let 
+        n<j = <ᵇ⇒< n j (subst T (sym n<ᵇj) tt)
+        n<Δ = <-≤-trans n<j j≤Δ
+        n<i = subst (λ z → n < z) Δ≡i n<Δ
+        lhs = var-subst'-no-op {τ = τₐ} n<i
+        n<i' = <-trans n<i (<suci {i})
+        stillVarN = var-subst'-no-op {τ = τₐ} n<i'
+        rhs = var-subst'-no-op {τ = (β# τ₂ τₐ i)} n<j
+        rhs' = subst (λ z → (β# z (β# τ₂ τₐ i) j) ≡ TVar n) (sym stillVarN) rhs
+    in trans lhs (sym rhs')
+...             | false  with (n ≡ᵇ (suc i)) in n≡ᵇi' | n <ᵇ suc i in n<ᵇi'
+...                       | true | _ rewrite (≡ᵇ⇒≡ n (suc i) (subst T (sym n≡ᵇi') tt)) = 
+    let 
+        n≡i' = ≡ᵇ⇒≡ n (suc i) (subst T (sym n≡ᵇi') tt)
+        lhs = var-subst'-just {n = i} {τ = τₐ} {i = i} refl
+        rhs = subst'-no-op {i = j} {τ₂ = (β# τ₂ τₐ i)} z≤n •τₐty
+    in trans lhs (sym rhs)
+...                       | false | true =
+    let 
+        n≢j = ≢ᵇ⇒≢ {n} {j} n≡ᵇj
+        n≮j = λ n<j → subst T n<ᵇj (<⇒<ᵇ {n} {j} n<j)
+        j≤n = ≮⇒≥ n≮j
+        j<n = ≤∧≢⇒< j≤n (λ j≡n → n≢j (sym j≡n))
+        n<i' = <ᵇ⇒< n (suc i) (subst T (sym n<ᵇi') tt)
+        
+        pn<i = <suc⇒pred< j<n n<i'
+        lhs = var-subst'-pred {τ = τ₂} j<n
+        lhs' = var-subst'-no-op {τ = τₐ} pn<i
+
+        rhs = var-subst'-no-op {τ = τₐ} n<i'
+        rhs' = var-subst'-pred {τ = (β# τ₂ τₐ i)} j<n
+    in trans lhs' (sym rhs')
+...                       | false | false =
+    let 
+        n<Δ'' = lookup'-size {Δ''} {n} lookupN
+        n<i'' = subst (λ z → n < (suc (suc z))) Δ≡i n<Δ''
+        n≤i' = <suc⇒≤ n<i''
+        n≢i' = ≢ᵇ⇒≢ {n} {suc i} n≡ᵇi'
+        n≮i' = λ n<i' → subst T n<ᵇi' (<⇒<ᵇ {n} {suc i} n<i')
+    in ⊥-elim (n≮i' (≤∧≢⇒< n≤i' n≢i'))
 
 
 
@@ -526,7 +611,7 @@ subst'-τ {Δ} {Γ} {i} {τ₁} {τ₂} {body} •⊢τ₁ty |Δ|≡i (τ-appT {
         ih' = subst (λ z → Δ ⨟ βᵧ Γ τ₁ i ⊢ β' f τ₁ i ⦂ ∀' β# τ₃ z (suc i)) (inc-τ-no-op z≤n •⊢τ₁ty) ih
         res = τ-appT {Δ} {βᵧ Γ τ₁ i} {β' f τ₁ i} {β# τ₃ τ₁ (suc i)} {β# τ₄ τ₁ i} Δ⊢τ₂'ty ih'
         Δ''τ₃ty = ∀bodyTy (τ-ty bodyTy)
-        β≡ = β#≡ {τ₁ = τ₃ } {τ₂ = τ₄} {τₐ = τ₁} {Δ = Δ} {i = i} {j = 0} |Δ|≡i Δ''τ₃ty ΔTy Δ⊢τ₁ty
+        β≡ = β#≡ {τ₁ = τ₃ } {τ₂ = τ₄} {τₐ = τ₁} {Δ = Δ} {i = i} {j = 0} |Δ|≡i z≤n Δ''τ₃ty ΔTy •⊢τ₁ty
         res' = subst (λ z →  Δ ⨟ βᵧ Γ τ₁ i ⊢ AppT (β' f τ₁ i) (β# τ₄ τ₁ i) ⦂ z) (sym β≡) res
     in res'
 
@@ -537,3 +622,23 @@ subst0'-τ : ∀ {τ₁ τ₂ body} →
             (• ,★ ⨟ ∘ ⊢ body ⦂ τ₂) →
             (• ⨟ ∘ ⊢ body [ τ₁ ]' ⦂ τ₂ #[ τ₁ ])
 subst0'-τ {τ₁} {τ₂} {body} τ₁Ty bodyTy  =  subst'-τ {•} {∘} {0} τ₁Ty refl bodyTy 
+
+
+
+-- subst''-τ : ∀ {Δ Γ i τ₁ τ₂ body} →
+--                  (• ⊢ τ₁ ty) →
+--                  (Δ ≡ i) →
+--                  ((★ ++' Δ) ⨟ Γ ⊢ body ⦂ τ₂) →
+--                  (Δ ⨟ Γ ⊢ (β' body τ₁ i) ⦂ (β# τ₂ τ₁ i))
+-- subst''-τ {Δ} {Γ} {i} {τ₁} {τ₂} {body} •⊢τ₁ty |Δ|≡i (τ-lam {Δ'} {Γ'} {τ₃} {τ₄} {e} ΔTy bodyTy) =
+--     --     let Δ++•⊢τ₁ty = ty-weaken {Δ} {•} {τ₁} •⊢τ₁ty
+--     --     Δ⊢τ₁ty = subst (λ z → (z ⊢ τ₁ ty)) (concat-id' Δ) Δ++•⊢τ₁ty
+--     --     Δ⊢τ₃'ty = subst'-ty ΔTy Δ⊢τ₁ty
+--     --     ih = subst'-τ •⊢τ₁ty |Δ|≡i bodyTy 
+--     -- in τ-lam Δ⊢τ₃'ty ih
+--     let Δ++•⊢τ₁ty = ty-weaken {Δ} {•} {τ₁} •⊢τ₁ty
+--         Δ⊢τ₁ty = subst (λ z → (z ⊢ τ₁ ty)) (concat-id' Δ) Δ++•⊢τ₁ty
+--         Δ⊢τ₃'ty = subst'-ty ΔTy Δ⊢τ₁ty
+--         ih = subst''-τ •⊢τ₁ty |Δ|≡i bodyTy
+--     in τ-lam Δ⊢τ₃'ty {!   !}
+-- subst''-τ •⊢τ₁ty |Δ|≡i _      = {!   !}
