@@ -127,95 +127,103 @@ add34τ = τ-app (τ-app addτ (natLitTy 3)) (natLitTy 4)
 evalAdd34 : Maybe ℕ
 evalAdd34 = evalNat add34τ 100 -- Should return just 7
 
--- -- Natural number multiplication.
--- mul : Term
--- mul =
---   Fix Nat⇒Nat⇒Nat
---     (Lam
---       (Lam
---         (If (Zero? (Var 1))
---             Zero
---             (App (App add (Var 0))
---                  (App (App (Var 2) 
---                            (Pred (Var 1))) 
---                       (Var 0))))))
+-- Natural number multiplication.
+mul : Term
+mul =
+  Fix Nat⇒Nat⇒Nat
+    (Lam
+      (Lam
+        (If (Zero? (Var 1))
+            Zero
+            (App (App add (Var 0))
+                 (App (App (Var 2) 
+                           (Pred (Var 1))) 
+                      (Var 0))))))
           
--- mulτ : • ⨟ ∘ ⊢ mul ⦂ Nat ⇒ Nat ⇒ Nat
--- mulτ =
---   τ-fix
---     (τ-lam
---       (τ-lam
---         (τ-if
---           (τ-zero? (τ-var refl))
---           τ-zero
---           (τ-app
---             (τ-app (weaken-closed addτ) 
---                    (τ-var refl))
---             (τ-app
---               (τ-app
---                 (τ-var refl)
---                 (τ-pred (τ-var refl)))
---               (τ-var refl))))))
+mulτ : • ⨟ ∘ ⊢ mul ⦂ Nat ⇒ Nat ⇒ Nat
+mulτ =
+  τ-fix
+    (ty-arr ty-nat (ty-arr ty-nat ty-nat))
+    (τ-lam
+      ty-nat
+      (τ-lam
+        ty-nat
+        (τ-if
+          (τ-zero? (τ-var ty-nat refl))
+          τ-zero
+          (τ-app
+            (τ-app (weaken-closed addτ) 
+                   (τ-var ty-nat refl))
+            (τ-app
+              (τ-app
+                (τ-var (ty-arr ty-nat (ty-arr ty-nat ty-nat)) refl)
+                (τ-pred (τ-var ty-nat refl)))
+              (τ-var ty-nat refl))))))
 
--- -- Factorial over natural numbers.
--- fact : Term
--- fact = 
---   Fix Nat⇒Nat
---     (Lam
---       (If (Zero? (Var 0))
---           (Suc Zero)
---           (App (App mul (Var 0)) 
---                (App (Var 1) 
---                     (Pred (Var 0))))))
+-- Factorial over natural numbers.
+fact : Term
+fact = 
+  Fix Nat⇒Nat
+    (Lam
+      (If (Zero? (Var 0))
+          (Suc Zero)
+          (App (App mul (Var 0)) 
+               (App (Var 1) 
+                    (Pred (Var 0))))))
 
--- factτ : • ⨟ ∘ ⊢ fact ⦂ Nat ⇒ Nat
--- factτ =
---   τ-fix
---     (τ-lam
---       (τ-if
---         (τ-zero? (τ-var refl))
---         (τ-suc τ-zero)
---         (τ-app
---           (τ-app (weaken-closed mulτ) -- (* n (! n-1))
---                   (τ-var refl))
---           (τ-app
---             (τ-var refl)
---             (τ-pred (τ-var refl))))))
+factτ : • ⨟ ∘ ⊢ fact ⦂ Nat ⇒ Nat
+factτ =
+  τ-fix
+    (ty-arr ty-nat ty-nat)
+    (τ-lam
+      ty-nat
+      (τ-if
+        (τ-zero? (τ-var ty-nat refl))
+        (τ-suc τ-zero)
+        (τ-app
+          (τ-app (weaken-closed mulτ) -- (* n (! n-1))
+                  (τ-var ty-nat refl))
+          (τ-app
+            (τ-var (ty-arr ty-nat ty-nat) refl)
+            (τ-pred (τ-var ty-nat refl))))))
 
--- fact5 : Term
--- fact5 = App fact (natLit 5)
+fact5 : Term
+fact5 = App fact (natLit 5)
 
--- fact5τ : • ⨟ ∘ ⊢ fact5 ⦂ Nat
--- fact5τ = τ-app factτ (natLitTy 5)
+fact5τ : • ⨟ ∘ ⊢ fact5 ⦂ Nat
+fact5τ = τ-app factτ (natLitTy 5)
 
--- fib : Term
--- fib =
---   Fix Nat⇒Nat
---     (Lam
---       (If (Zero? (Var 0))
---           Zero
---           (If (Zero? (Pred (Var 0)))
---               (Suc Zero)
---               (App (App add (App (Var 1) (Pred (Var 0))))
---                    (App (Var 1) 
---                         (Pred (Pred (Var 0))))))))
--- fibτ : • ⨟ ∘ ⊢ fib ⦂ Nat ⇒ Nat
--- fibτ =
---   τ-fix
---     (τ-lam
---       (τ-if
---         (τ-zero? (τ-var refl))
---         τ-zero
---         (τ-if
---           (τ-zero? (τ-pred (τ-var refl)))
---           (τ-suc τ-zero)
---           (τ-app
---             (τ-app (weaken-closed addτ)
---                     (τ-app (τ-var refl) (τ-pred (τ-var refl))))
---             (τ-app (τ-var refl)
---                     (τ-pred (τ-pred (τ-var refl))))))))
+fib : Term
+fib =
+  Fix Nat⇒Nat
+    (Lam
+      (If (Zero? (Var 0))
+          Zero
+          (If (Zero? (Pred (Var 0)))
+              (Suc Zero)
+              (App (App add (App (Var 1) (Pred (Var 0))))
+                   (App (Var 1) 
+                        (Pred (Pred (Var 0))))))))
 
--- fib10 : Term
--- fib10 = App fib (natLit 10)
--- fib10τ : • ⨟ ∘ ⊢ fib10 ⦂ Nat
--- fib10τ = τ-app fibτ (natLitTy 10)
+fibτ : • ⨟ ∘ ⊢ fib ⦂ Nat ⇒ Nat
+fibτ =
+  τ-fix
+    (ty-arr ty-nat ty-nat)
+    (τ-lam
+      ty-nat
+      (τ-if
+        (τ-zero? (τ-var ty-nat refl))
+        τ-zero
+        (τ-if
+          (τ-zero? (τ-pred (τ-var ty-nat refl)))
+          (τ-suc τ-zero)
+          (τ-app
+            (τ-app (weaken-closed addτ)
+                    (τ-app (τ-var (ty-arr ty-nat ty-nat) refl) (τ-pred (τ-var ty-nat refl))))
+            (τ-app (τ-var (ty-arr ty-nat ty-nat) refl)
+                    (τ-pred (τ-pred (τ-var ty-nat refl))))))))
+
+fib10 : Term
+fib10 = App fib (natLit 10)
+fib10τ : • ⨟ ∘ ⊢ fib10 ⦂ Nat
+fib10τ = τ-app fibτ (natLitTy 10)
