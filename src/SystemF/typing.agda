@@ -3,6 +3,7 @@ module SystemF.typing where
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Maybe using (Maybe; just; nothing)
 open import Data.Bool using (true; false)
+open import Data.Nat using (ℕ; suc; pred; _≡ᵇ_; _<ᵇ_)
 
 open import SystemF.terms
 open import SystemF.types
@@ -20,11 +21,19 @@ data _⊢_ty : TypeContext → τ → Set where
   ty-bool : ∀ {Δ} → Δ ⊢ Bool ty
   ty-var : ∀ {Δ n} → lookup' n Δ ≡ just (TVar n) → Δ ⊢ TVar n ty
   ty-prod : ∀ {Δ τ1 τ2} → Δ ⊢ τ1 ty → Δ ⊢ τ2 ty → Δ ⊢ (τ1 × τ2) ty
-  ty-sum : ∀ {Δ τ1 τ2} → Δ ⊢ τ1 ty → Δ ⊢ τ2 ty → Δ ⊢ (τ1 + τ2) ty
+  ty-sum : ∀ {Δ τ1 τ2} → Δ ⊢ τ1 ty → Δ ⊢ τ2 ty → Δ ⊢ (τ1 ⨁ τ2) ty
   ty-arr : ∀ {Δ τ1 τ2} → Δ ⊢ τ1 ty → Δ ⊢ τ2 ty → Δ ⊢ (τ1 ⇒ τ2) ty
   ty-all : ∀ {Δ τ} → Δ ,★ ⊢ τ ty → Δ ⊢ (∀' τ) ty
 
 
+inc-Γ : TermContext → TermContext 
+inc-Γ ∘ = ∘
+inc-Γ (Γ , τ) = (inc-Γ Γ) , (inc-τ τ)
+
+
+βᵧ : TermContext → τ → ℕ → TermContext
+βᵧ ∘ τ₂ i = ∘
+βᵧ (Γ , τ₁) τ₂ i = (βᵧ Γ τ₂ i) , (β# τ₁ τ₂ i)
 
 infix 4 _⨟_⊢_⦂_
 
@@ -35,6 +44,7 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     -- Δ ⨟ Γ, x ⊢ x ⦂ τ
     -- nameless vars
     τ-var :           ∀ {Δ Γ n τ} → 
+            Δ ⊢ τ ty →
             lookup n Γ ≡ just τ → Δ ⨟ Γ ⊢ Var n ⦂ τ
 
     --
@@ -128,25 +138,27 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
 
     --         Δ ⨟ Γ ⊢ e ⦂ τ₁         
     -- ---------------------------
-    --     Δ ⨟ Γ ⊢ inl e ⦂ τ₁ + τ₂
+    --     Δ ⨟ Γ ⊢ inl e ⦂ τ₁ ⨁ τ₂
     τ-inl : ∀ {Δ Γ e τ1 τ2} → 
+            Δ ⊢ τ2 ty → 
              (Δ ⨟ Γ ⊢ e ⦂ τ1) → 
-             (Δ ⨟ Γ ⊢ Inl e ⦂ τ1 + τ2)
+             (Δ ⨟ Γ ⊢ Inl e ⦂ τ1 ⨁ τ2)
     
     --         Δ ⨟ Γ ⊢ e ⦂ τ₂         
     -- ---------------------------
-    --      Δ ⨟ Γ ⊢ inr e ⦂ τ₁ + τ₂
-    τ-inr : ∀ {Δ Γ e τ1 τ2} → 
+    --      Δ ⨟ Γ ⊢ inr e ⦂ τ₁ ⨁ τ₂
+    τ-inr : ∀ {Δ Γ e τ1 τ2} →
+             Δ ⊢ τ1 ty → 
              (Δ ⨟ Γ ⊢ e ⦂ τ2) → 
-             (Δ ⨟ Γ ⊢ Inr e ⦂ τ1 + τ2)
+             (Δ ⨟ Γ ⊢ Inr e ⦂ τ1 ⨁ τ2)
     
-    --  Δ ⨟ Γ ⊢ e ⦂ τ₁ + τ₂ 
+    --  Δ ⨟ Γ ⊢ e ⦂ τ₁ ⨁ τ₂ 
     --  Δ ⨟ Γ ⊢ e1 ⦂ τ₃ 
     --  Δ ⨟ Γ ⊢ e2 ⦂ τ₃
     -- --------------------------------------
     --  Δ ⨟ Γ ⊢ case e of inl x ⇒ e1 | inr y ⇒ e2 ⦂ τ₃
     τ-case : ∀ {Δ Γ τₗ τᵣ τ e eₗ eᵣ } → 
-                  (Δ ⨟ Γ ⊢ e ⦂ τₗ + τᵣ) → 
+                  (Δ ⨟ Γ ⊢ e ⦂ τₗ ⨁ τᵣ) → 
                   (Δ ⨟ Γ , τₗ ⊢ eₗ ⦂ τ) → 
                   (Δ ⨟ Γ , τᵣ ⊢ eᵣ ⦂ τ) → 
                   (Δ ⨟ Γ ⊢ Case e eₗ eᵣ ⦂ τ)
@@ -164,12 +176,12 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     -- --------------------------------------
     --     Δ ⨟ Γ ⊢ lamT τ e ⦂ ∀' τ
     τ-lamT : ∀ {Δ Γ τ e} → 
-      (Δ ,★ ⨟ Γ ⊢ e ⦂ τ) → 
+      (Δ ,★ ⨟ (inc-Γ Γ) ⊢ e ⦂ τ) → 
       (Δ ⨟ Γ ⊢ LamT e ⦂ ∀' τ)
 
-    --      Δ , α ⨟ Γ  ⊢ e ⦂ τ 
+    --  Δ ⊢ τ₂ ty    Δ ⨟ Γ ⊢ f ⦂ ∀' τ₁
     -- --------------------------------------
-    --     Δ ⨟ Γ ⊢ lamT τ e ⦂ τ
+    --     Δ ⨟ Γ ⊢ AppT f τ₂ ⦂ τ₁ #[ τ₂ ]
     τ-appT : ∀ {Δ Γ f τ1 τ2} →    
           Δ ⊢ τ2 ty →
           (Δ ⨟ Γ ⊢ f ⦂ ∀' τ1) →  

@@ -2,6 +2,8 @@
 
 module preservation where
 
+open import Relation.Binary.PropositionalEquality using (subst)
+
 open import SystemF.types
 open import SystemF.terms
 open import SystemF.values
@@ -54,10 +56,10 @@ preservation (τ-app fTy eTy) (ss-app-arg stepe)             = τ-app fTy (prese
 preservation (τ-app (τ-lam ΔTy bodyTy) vTy) (ss-app-beta vVal)  = subst0-τ bodyTy vTy
 
 -- inl: steps
-preservation (τ-inl τ₁) (ss-inl-step step)                  = τ-inl (preservation τ₁ step)
+preservation (τ-inl  ΔTy  τ₁) (ss-inl-step step)                  = τ-inl  ΔTy (preservation τ₁ step)
 
 -- inr: steps
-preservation (τ-inr τ₂) (ss-inr-step step)                  = τ-inr (preservation τ₂ step)
+preservation (τ-inr  ΔTy  τ₂) (ss-inr-step step)                  = τ-inr  ΔTy  (preservation τ₂ step)
 
 -- case: steps
 preservation (τ-case τₑ τₗ τᵣ) (ss-case-step step)          = τ-case (preservation τₑ step) τₗ τᵣ
@@ -71,4 +73,4 @@ preservation (τ-fix {τ = τ} {e = e} ΔTy τₑ) ss-fix              = subst0-
 preservation (τ-appT ΔTy fTy) (ss-appT-func stepf)            = τ-appT ΔTy (preservation fTy stepf)
 
 -- appT : beta
-preservation (τ-appT ΔTy (τ-lamT bodyTy)) (ss-appT-beta)  = {!   !}
+preservation (τ-appT ΔTy (τ-lamT {Δ} {Γ} {τ} {e} bodyTy)) (ss-appT-beta)  =  subst0'-τ ΔTy bodyTy

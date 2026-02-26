@@ -67,7 +67,7 @@ t [ s ] = β t s 0
 
 β' : Term → τ → ℕ → Term
 β' (Var m) τ n = Var m
-β' (Lam t) s n               = Lam (β' t s (suc n)) 
+β' (Lam t) s n               = Lam (β' t s n) 
 β' (App t u) s n             = App (β' t s n) (β' u s n)
 β' True s n                  = True   
 β' False s n                 = False
@@ -83,9 +83,9 @@ t [ s ] = β t s 0
 β' (Inl t) s n               = Inl (β' t s n)
 β' (Inr t) s n               = Inr (β' t s n)
 β' (Case sum left right) s n = Case (β' sum s n) (β' left s n) (β' right s n)
-β' (Fix τ t) s n             = Fix τ (β' t s n)
+β' (Fix τ t) s n             = Fix (β# τ s n) (β' t s n)
 β' (LamT t) s n             = LamT (β' t s (suc n))
-β' (AppT t τ) s n = AppT (β' t s n) (τ #[ s ])
+β' (AppT t τ) s n = AppT (β' t s n) (β# τ s n)
 
 
 infixl 5 _[_]'

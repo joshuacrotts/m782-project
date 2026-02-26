@@ -102,17 +102,30 @@ add = Fix Nat⇒Nat⇒Nat
 addτ : • ⨟ ∘ ⊢ add ⦂ Nat ⇒ Nat ⇒ Nat
 addτ = 
   τ-fix 
-    (τ-lam
-      (τ-lam
+    (ty-arr
+      ty-nat 
+      (ty-arr ty-nat ty-nat)) 
+    (τ-lam 
+      ty-nat 
+      (τ-lam ty-nat 
         (τ-if 
-          (τ-zero? (τ-var refl))
-          (τ-var refl)
+          (τ-zero? (τ-var ty-nat refl)) 
+          (τ-var ty-nat refl)
           (τ-suc 
             (τ-app 
               (τ-app 
-                (τ-var refl) 
-                (τ-pred (τ-var refl)))
-              (τ-var refl))))))
+                (τ-var (ty-arr ty-nat (ty-arr ty-nat ty-nat)) refl) 
+                (τ-pred (τ-var ty-nat refl)))
+              (τ-var ty-nat refl))))))
+
+add34 : Term
+add34 = App (App add (natLit 3)) (natLit 4)
+
+add34τ : • ⨟ ∘ ⊢ add34 ⦂ Nat
+add34τ = τ-app (τ-app addτ (natLitTy 3)) (natLitTy 4)
+
+evalAdd34 : Maybe ℕ
+evalAdd34 = evalNat add34τ 100 -- Should return just 7
 
 -- Natural number multiplication.
 mul : Term
@@ -130,19 +143,22 @@ mul =
 mulτ : • ⨟ ∘ ⊢ mul ⦂ Nat ⇒ Nat ⇒ Nat
 mulτ =
   τ-fix
+    (ty-arr ty-nat (ty-arr ty-nat ty-nat))
     (τ-lam
+      ty-nat
       (τ-lam
+        ty-nat
         (τ-if
-          (τ-zero? (τ-var refl))
+          (τ-zero? (τ-var ty-nat refl))
           τ-zero
           (τ-app
             (τ-app (weaken-closed addτ) 
-                   (τ-var refl))
+                   (τ-var ty-nat refl))
             (τ-app
               (τ-app
-                (τ-var refl)
-                (τ-pred (τ-var refl)))
-              (τ-var refl))))))
+                (τ-var (ty-arr ty-nat (ty-arr ty-nat ty-nat)) refl)
+                (τ-pred (τ-var ty-nat refl)))
+              (τ-var ty-nat refl))))))
 
 -- Factorial over natural numbers.
 fact : Term
@@ -158,16 +174,18 @@ fact =
 factτ : • ⨟ ∘ ⊢ fact ⦂ Nat ⇒ Nat
 factτ =
   τ-fix
+    (ty-arr ty-nat ty-nat)
     (τ-lam
+      ty-nat
       (τ-if
-        (τ-zero? (τ-var refl))
+        (τ-zero? (τ-var ty-nat refl))
         (τ-suc τ-zero)
         (τ-app
           (τ-app (weaken-closed mulτ) -- (* n (! n-1))
-                  (τ-var refl))
+                  (τ-var ty-nat refl))
           (τ-app
-            (τ-var refl)
-            (τ-pred (τ-var refl))))))
+            (τ-var (ty-arr ty-nat ty-nat) refl)
+            (τ-pred (τ-var ty-nat refl))))))
 
 fact5 : Term
 fact5 = App fact (natLit 5)
@@ -186,21 +204,24 @@ fib =
               (App (App add (App (Var 1) (Pred (Var 0))))
                    (App (Var 1) 
                         (Pred (Pred (Var 0))))))))
+
 fibτ : • ⨟ ∘ ⊢ fib ⦂ Nat ⇒ Nat
 fibτ =
   τ-fix
+    (ty-arr ty-nat ty-nat)
     (τ-lam
+      ty-nat
       (τ-if
-        (τ-zero? (τ-var refl))
+        (τ-zero? (τ-var ty-nat refl))
         τ-zero
         (τ-if
-          (τ-zero? (τ-pred (τ-var refl)))
+          (τ-zero? (τ-pred (τ-var ty-nat refl)))
           (τ-suc τ-zero)
           (τ-app
             (τ-app (weaken-closed addτ)
-                    (τ-app (τ-var refl) (τ-pred (τ-var refl))))
-            (τ-app (τ-var refl)
-                    (τ-pred (τ-pred (τ-var refl))))))))
+                    (τ-app (τ-var (ty-arr ty-nat ty-nat) refl) (τ-pred (τ-var ty-nat refl))))
+            (τ-app (τ-var (ty-arr ty-nat ty-nat) refl)
+                    (τ-pred (τ-pred (τ-var ty-nat refl))))))))
 
 fib10 : Term
 fib10 = App fib (natLit 10)
