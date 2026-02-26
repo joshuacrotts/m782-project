@@ -24,6 +24,7 @@ data _⊢_ty : TypeContext → τ → Set where
   ty-sum : ∀ {Δ τ1 τ2} → Δ ⊢ τ1 ty → Δ ⊢ τ2 ty → Δ ⊢ (τ1 ⨁ τ2) ty
   ty-arr : ∀ {Δ τ1 τ2} → Δ ⊢ τ1 ty → Δ ⊢ τ2 ty → Δ ⊢ (τ1 ⇒ τ2) ty
   ty-all : ∀ {Δ τ} → Δ ,★ ⊢ τ ty → Δ ⊢ (∀' τ) ty
+  ty-list : ∀ {Δ τ} → Δ ⊢ τ ty → Δ ⊢ (List τ) ty
 
 
 inc-Γ : TermContext → TermContext 
@@ -58,6 +59,13 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
     --      Δ ⨟ Γ ⊢ false ⦂ Bool
     τ-false : ∀ {Δ Γ} → 
              (Δ ⨟ Γ ⊢ False ⦂ Bool)
+
+
+    -- 
+    -- ----------------------------
+    --     Δ ⨟ Γ ⊢ ⋆ : Unit
+    τ-unit : ∀ {Δ Γ} → 
+             (Δ ⨟ Γ ⊢ ⋆ ⦂ Unit)
 
     --
     -- ---------------------------
@@ -186,3 +194,43 @@ data _⨟_⊢_⦂_ : TypeContext → TermContext → Term → τ → Set where
           Δ ⊢ τ2 ty →
           (Δ ⨟ Γ ⊢ f ⦂ ∀' τ1) →  
           (Δ ⨟ Γ ⊢ AppT f τ2 ⦂ τ1 #[ τ2 ])
+  
+---------------------------------------------------
+--            TYPING RULES FOR LISTS             --
+---------------------------------------------------
+
+    --     Δ ⊢ τ ty
+    -- --------------------------------------
+    --     Δ ⨟ Γ ⊢ Nil τ ⦂ List τ
+    τ-nil : ∀ {Δ Γ τ} →
+            (Δ ⊢ τ ty) →
+            (Δ ⨟ Γ ⊢ Nil τ ⦂ List τ)
+
+    --     Δ ⨟ Γ ⊢ x : τ     Δ ⨟ Γ ⊢ xs : List τ
+    -- --------------------------------------------
+    --      Δ ⨟ Γ ⊢ LCons τ x xs : List τ
+    τ-lcons : ∀ {Δ Γ τ e1 e2} →
+                (Δ ⨟ Γ ⊢ e1 ⦂ τ) →
+                (Δ ⨟ Γ ⊢ e2 ⦂ List τ) →
+                (Δ ⨟ Γ ⊢ LCons e1 e2 ⦂ List τ)
+
+    --    Δ ⨟ Γ ⊢ xs : List τ
+    -- --------------------------------------
+    --     Δ ⨟ Γ ⊢ Nil? xs : Bool
+    τ-nil? : ∀ {Δ Γ τ e} →
+        (Δ ⨟ Γ ⊢ e ⦂ List τ) →
+        (Δ ⨟ Γ ⊢ Nil? e ⦂ Bool)
+
+    --  Δ ⨟ Γ ⊢ x : τ     Δ ⨟ Γ ⊢ xs : List τ
+    --  --------------------------------------------
+    --     Δ ⨟ Γ ⊢ first (lcons x xs) : (Unit ⨁ τ)
+    τ-first : ∀ {Δ Γ τ e} →
+                (Δ ⨟ Γ ⊢ e ⦂ List τ) →
+                (Δ ⨟ Γ ⊢ First e ⦂ (Unit ⨁ τ))
+    
+    -- Δ ⨟ Γ ⊢ x : τ     Δ ⨟ Γ ⊢ xs : List τ
+    -- --------------------------------------------
+    --     Δ ⨟ Γ ⊢ rest (lcons x xs) : List τ
+    τ-rest : ∀ {Δ Γ τ e} →
+       (Δ ⨟ Γ ⊢ e ⦂ List τ) →
+       (Δ ⨟ Γ ⊢ Rest e ⦂ List τ)

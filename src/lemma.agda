@@ -80,6 +80,7 @@ ty-weaken {Δ₁} {Δ₂} (ty-var {Δ = Δ₂} {n} lookupN) with n <ᵇ Δ₂ in
 ty-weaken {Δ₁} {Δ₂} (ty-prod τ₁ τ₂) = ty-prod (ty-weaken τ₁) (ty-weaken τ₂)
 ty-weaken {Δ₁} {Δ₂} (ty-sum τ₁ τ₂) = ty-sum (ty-weaken τ₁) (ty-weaken τ₂)
 ty-weaken {Δ₁} {Δ₂} (ty-arr τ₁ τ₂) = ty-arr (ty-weaken τ₁) (ty-weaken τ₂)
+ty-weaken {Δ₁} {Δ₂} (ty-list τ) = ty-list (ty-weaken τ)
 ty-weaken {Δ₁} {Δ₂} {τ₁} (ty-all {Δ = Δ₂} {τ₂} ty) = ty-all (subst (λ z → z ⊢ τ₂ ty) (sym (++,★ {Δ₁} {Δ₂})) (ty-weaken {Δ₁} {Δ₂ ,★} ty))
     where
       ++,★ : ∀ {Δ₁ Δ₂} → ((Δ₁ ++' Δ₂) ,★) ≡ (Δ₁ ++' (Δ₂ ,★))
@@ -115,6 +116,7 @@ inc-τ-no-op Δ≤j ty-bool = refl
 inc-τ-no-op Δ≤j (ty-prod lTy rTy) = cong₂ _×_ (inc-τ-no-op Δ≤j lTy) (inc-τ-no-op Δ≤j rTy)
 inc-τ-no-op Δ≤j (ty-sum lTy rTy) = cong₂ _⨁_ (inc-τ-no-op Δ≤j lTy) (inc-τ-no-op Δ≤j rTy)
 inc-τ-no-op Δ≤j (ty-arr lTy rTy) = cong₂ _⇒_ (inc-τ-no-op Δ≤j lTy) (inc-τ-no-op Δ≤j rTy)
+inc-τ-no-op Δ≤j (ty-list ty) = cong (List) (inc-τ-no-op Δ≤j ty)
 inc-τ-no-op {Δ} {∀' τ'} {j} Δ≤j (ty-all ty) = cong ∀'_ (inc-τ-no-op (s≤s Δ≤j) ty)
 inc-τ-no-op {Δ} {TVar n} {j} Δ≤j (ty-var {n = n} lookupN) with n <ᵇ j in eq
 ... | true = refl
@@ -133,6 +135,7 @@ inc-τ-weaken {Δ} {τ} {i} i≤Δ ty-bool = ty-bool
 inc-τ-weaken {Δ} {τ} {i} i≤Δ (ty-prod lTy rTy) = ty-prod (inc-τ-weaken i≤Δ lTy) (inc-τ-weaken i≤Δ rTy)
 inc-τ-weaken {Δ} {τ} {i} i≤Δ (ty-sum lTy rTy) = ty-sum (inc-τ-weaken i≤Δ lTy) (inc-τ-weaken i≤Δ rTy)
 inc-τ-weaken {Δ} {τ} {i} i≤Δ (ty-arr lTy rTy) = ty-arr (inc-τ-weaken i≤Δ lTy) (inc-τ-weaken i≤Δ rTy)
+inc-τ-weaken {Δ} {τ} {i} i≤Δ (ty-list ty) = ty-list (inc-τ-weaken i≤Δ ty)
 inc-τ-weaken {Δ} {τ} {i} i≤Δ (ty-all ty) = ty-all (inc-τ-weaken (s≤s i≤Δ) ty)
 inc-τ-weaken {Δ} {τ} {i} i≤Δ (ty-var {Δ = Δ} {n} lookupN) with n <ᵇ i in n<ᵇi
 ... | true  = ty-weaken-suc (ty-var {Δ = Δ} {n} lookupN) 
@@ -159,6 +162,7 @@ subst'-ty : ∀ {Δ i τ₁ τ₂} →
 subst'-ty i≤Δ ty-unit τ₁Ty = ty-unit
 subst'-ty i≤Δ ty-nat τ₁Ty = ty-nat 
 subst'-ty i≤Δ ty-bool τ₁Ty = ty-bool 
+subst'-ty i≤Δ (ty-list τ₂) τ₁Ty = ty-list (subst'-ty i≤Δ τ₂ τ₁Ty)
 subst'-ty {Δ} {i} {τ₁} i≤Δ (ty-var {Δ'} {n} lookupN) τ₁Ty with n ≡ᵇ i in n≡ᵇi | n <ᵇ i in n<ᵇi 
 ... | true  | _   = τ₁Ty
 ... | false | true  with i ≤ᵇ Δ in i≤ᵇΔ
@@ -187,6 +191,7 @@ subst'-ty {Δ} {i} {τ₁}  i≤Δ (ty-all {Δ'} {τ₃} ty) τ₁Ty = ty-all (s
 τ-ty τ-true = ty-bool
 τ-ty τ-false = ty-bool
 τ-ty τ-zero = ty-nat
+τ-ty τ-unit = ty-unit
 τ-ty (τ-suc τ₁) = ty-nat
 τ-ty (τ-pred τ₁) = ty-nat
 τ-ty (τ-zero? τ₁) = ty-bool
@@ -207,7 +212,13 @@ subst'-ty {Δ} {i} {τ₁}  i≤Δ (ty-all {Δ'} {τ₃} ty) τ₁Ty = ty-all (s
 τ-ty (τ-case {Δ} {Γ} {leftTy} {rightTy} {τ₃} {τₑ} {el} {er} e' τ₁ τ₂) = τ-ty τ₁
 τ-ty (τ-lam {Δ} {Γ} {τ₁} ΔTy bodyTy) = ty-arr ΔTy (τ-ty bodyTy)
 τ-ty (τ-lamT x) = ty-all (τ-ty x)
-
+τ-ty (τ-nil τ) = ty-list τ
+τ-ty (τ-nil? e) = ty-bool
+τ-ty (τ-lcons τ₁ τ₂) = ty-list (τ-ty τ₁)
+τ-ty (τ-first τ₁) with τ-ty τ₁
+... | ty-list τTy = ty-sum ty-unit τTy
+τ-ty (τ-rest τ₁) with τ-ty τ₁
+... | ty-list τTy = ty-list τTy
 
 
 
@@ -216,6 +227,7 @@ subst'-ty {Δ} {i} {τ₁}  i≤Δ (ty-all {Δ'} {τ₃} ty) τ₁Ty = ty-all (s
 Γ-weaken τ-true = τ-true
 Γ-weaken τ-false = τ-false
 Γ-weaken τ-zero = τ-zero
+Γ-weaken τ-unit = τ-unit 
 Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-suc τ₁)        = τ-suc (Γ-weaken {Δ} {Γ₁} {Γ₂} τ₁)
 Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-pred τ₁)       = τ-pred (Γ-weaken {Δ} {Γ₁} {Γ₂} τ₁)
 Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-zero? τ₁)      = τ-zero? (Γ-weaken {Δ} {Γ₁} {Γ₂} τ₁)
@@ -227,6 +239,12 @@ subst'-ty {Δ} {i} {τ₁}  i≤Δ (ty-all {Δ'} {τ₃} ty) τ₁Ty = ty-all (s
 Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-appT ΔTy fTy)   = τ-appT ΔTy (Γ-weaken {Δ} {Γ₁} {Γ₂} fTy)
 Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-inl ΔTy τ₁)        = τ-inl ΔTy (Γ-weaken {Δ} {Γ₁} {Γ₂} τ₁)
 Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-inr ΔTy τ2)        = τ-inr ΔTy (Γ-weaken {Δ} {Γ₁}{ Γ₂} τ2)
+Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-nil τ) = τ-nil τ
+Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-nil? τ) = τ-nil? (Γ-weaken {Δ} {Γ₁} {Γ₂} τ)
+Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-lcons τ₁ τ₂) = τ-lcons (Γ-weaken {Δ} {Γ₁} {Γ₂} τ₁) (Γ-weaken {Δ} {Γ₁} {Γ₂} τ₂)
+Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-first τ₁) = τ-first (Γ-weaken {Δ} {Γ₁} {Γ₂} τ₁)
+Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-rest τ₁) = τ-rest (Γ-weaken {Δ} {Γ₁} {Γ₂} τ₁)
+
 Γ-weaken {Δ} {Γ₁} {Γ₂} (τ-fix {Δ} {Γ} {τ} {e} ΔTy bodyTy) =
   let
     aa = concat-append {Γ₁} {Γ₂} {τ}
@@ -261,6 +279,7 @@ subst'-ty {Δ} {i} {τ₁}  i≤Δ (ty-all {Δ'} {τ₃} ty) τ₁Ty = ty-all (s
 Δ-weaken τ-true = τ-true
 Δ-weaken τ-false = τ-false
 Δ-weaken τ-zero = τ-zero
+Δ-weaken τ-unit = τ-unit
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-suc τ₁) = τ-suc (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₁)
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-pred τ₁) = τ-pred (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₁)
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-zero? τ₁) = τ-zero? (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₁)
@@ -272,6 +291,11 @@ subst'-ty {Δ} {i} {τ₁}  i≤Δ (ty-all {Δ'} {τ₃} ty) τ₁Ty = ty-all (s
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-appT ΔTy bodyTy) = τ-appT (ty-weaken ΔTy) (Δ-weaken {Δ₁} {Δ₂} {Γ} bodyTy)
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-inl ΔTy τ₁) = τ-inl (ty-weaken ΔTy)  (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₁)
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-inr ΔTy τ₂) = τ-inr (ty-weaken ΔTy)  (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₂)
+Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-nil τ) = τ-nil (ty-weaken τ)
+Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-nil? e) = τ-nil? (Δ-weaken {Δ₁} {Δ₂} {Γ} e)
+Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-lcons τ₁ τ₂) = τ-lcons (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₁) (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₂)
+Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-first τ₁) = τ-first (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₁)
+Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-rest τ₁) = τ-rest (Δ-weaken {Δ₁} {Δ₂} {Γ} τ₁)
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-fix {Δ} {Γ} {τ} {e} ΔTy bodyTy) = τ-fix (ty-weaken ΔTy)  (Δ-weaken {Δ₁} {Δ₂} {Γ , τ} bodyTy)
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-var ΔTy lookupN) = τ-var (ty-weaken ΔTy) lookupN
 Δ-weaken {Δ₁} {Δ₂} {Γ} (τ-case {Δ} {Γ₂} {leftTy} {rightTy} {τ₃} {τₑ} {el} {er} e' τ₁ τ₂) = 
@@ -313,6 +337,7 @@ subst-τ : ∀ {Δ Γ i τ₁ τ₂ body v} →
 subst-τ |Γ|≡i (τ-true) vTy          = τ-true
 subst-τ |Γ|≡i (τ-false) vTy         = τ-false
 subst-τ |Γ|≡i (τ-zero) vTy          = τ-zero
+subst-τ |Γ|≡i (τ-unit) vTy          = τ-unit
 subst-τ |Γ|≡i (τ-suc τ₁) vTy        = τ-suc (subst-τ |Γ|≡i τ₁ vTy)
 subst-τ |Γ|≡i (τ-pred τ₁) vTy       = τ-pred (subst-τ |Γ|≡i τ₁ vTy)
 subst-τ |Γ|≡i (τ-zero? τ₁) vTy      = τ-zero? (subst-τ |Γ|≡i τ₁ vTy)
@@ -321,8 +346,13 @@ subst-τ |Γ|≡i (τ-cons τ₁ τ₂) vTy    = τ-cons (subst-τ |Γ|≡i τ�
 subst-τ |Γ|≡i (τ-fst τ₁×₂) vTy      = τ-fst (subst-τ |Γ|≡i τ₁×₂ vTy)
 subst-τ |Γ|≡i (τ-snd τ₁×₂) vTy      = τ-snd (subst-τ |Γ|≡i τ₁×₂ vTy)
 subst-τ |Γ|≡i (τ-app fTy eTy) vTy   = τ-app (subst-τ |Γ|≡i fTy vTy) (subst-τ |Γ|≡i eTy vTy)
-subst-τ |Γ|≡i (τ-inl ΔTy τ₁) vTy        = τ-inl ΔTy (subst-τ |Γ|≡i τ₁ vTy)
-subst-τ |Γ|≡i (τ-inr ΔTy τ₂) vTy        = τ-inr ΔTy (subst-τ |Γ|≡i τ₂ vTy)
+subst-τ |Γ|≡i (τ-inl ΔTy τ₁) vTy    = τ-inl ΔTy (subst-τ |Γ|≡i τ₁ vTy)
+subst-τ |Γ|≡i (τ-inr ΔTy τ₂) vTy    = τ-inr ΔTy (subst-τ |Γ|≡i τ₂ vTy)
+subst-τ |Γ|≡i (τ-nil τ) vTy           = τ-nil τ
+subst-τ |Γ|≡i (τ-nil? τ) vTy        = τ-nil? (subst-τ |Γ|≡i τ vTy)
+subst-τ |Γ|≡i (τ-lcons τ₁ τ₂) vTy   = τ-lcons (subst-τ |Γ|≡i τ₁ vTy) (subst-τ |Γ|≡i τ₂ vTy)
+subst-τ |Γ|≡i (τ-first τ) vTy       = τ-first (subst-τ |Γ|≡i τ vTy)
+subst-τ |Γ|≡i (τ-rest τ) vTy        = τ-rest (subst-τ |Γ|≡i τ vTy)
 subst-τ {Δ₁} {Γ₁} {i} {τ₁} {τ₂} {body = Fix τ e} {v = v} |Γ|≡i
         (τ-fix {τ = τ} {e = e} ΔTy bodyTy) vTy = 
   let
@@ -422,6 +452,7 @@ subst'-no-op {Δ} {i} |Δ|≤i (ty-var {Δ = Δ} {n} lookupN) with n ≡ᵇ i in
     in ⊥-elim (subst T n<ᵇi (<⇒<ᵇ n<i))
 subst'-no-op |Δ|≤i (ty-prod τ₂₁ τ₂₂) = cong₂ _×_ (subst'-no-op |Δ|≤i τ₂₁) (subst'-no-op |Δ|≤i τ₂₂)
 subst'-no-op |Δ|≤i (ty-sum τ₂₁ τ₂₂) = cong₂ _⨁_ (subst'-no-op |Δ|≤i τ₂₁) (subst'-no-op |Δ|≤i τ₂₂)
+subst'-no-op |Δ|≤i (ty-list τ) = cong List (subst'-no-op |Δ|≤i τ)
 subst'-no-op |Δ|≤i (ty-arr τ₂₁ τ₂₂) = cong₂ _⇒_ (subst'-no-op |Δ|≤i τ₂₁) (subst'-no-op |Δ|≤i τ₂₂)
 subst'-no-op |Δ|≤i (ty-all τ₂) = cong ∀'_ (subst'-no-op (s≤s |Δ|≤i) τ₂)
 
@@ -503,6 +534,7 @@ inc-τ-β≡ {τ₁} {τ₂} {i} {j} j≤i •⊢τ₂ty with τ₁
 ... | ty₁ × ty₂ = cong₂ _×_ (inc-τ-β≡ {ty₁} {τ₂} {i} {j} j≤i •⊢τ₂ty) (inc-τ-β≡ {ty₂} {τ₂} {i} {j} j≤i •⊢τ₂ty)
 ... | ty₁ ⨁ ty₂ = cong₂ _⨁_ (inc-τ-β≡ {ty₁} {τ₂} {i} {j} j≤i •⊢τ₂ty) (inc-τ-β≡ {ty₂} {τ₂} {i} {j} j≤i •⊢τ₂ty)
 ... | ty₁ ⇒ ty₂ = cong₂ _⇒_ (inc-τ-β≡ {ty₁} {τ₂} {i} {j} j≤i •⊢τ₂ty) (inc-τ-β≡ {ty₂} {τ₂} {i} {j} j≤i •⊢τ₂ty)
+... | List ty   = cong List (inc-τ-β≡ {ty} {τ₂} {i} {j} j≤i •⊢τ₂ty)
 ... | ∀' ty =
     let
         -- closedness: inc-τ τ₂ ≡ τ₂ and inc-τ-i τ₂ (suc j) ≡ τ₂
@@ -624,6 +656,7 @@ inc-Γᵧ {Γ , τ₁} {τ₂} {i} •⊢τ₂ty
 ... | ty-prod τ₂₁ τ₂₂ = cong₂ _×_ (β#≡  Δ≡i j≤Δ τ₂₁  Δ'τ₂ty •τₐty) (β#≡  Δ≡i j≤Δ  τ₂₂  Δ'τ₂ty •τₐty)
 ... | ty-arr τ₂₁ τ₂₂ = cong₂ _⇒_ (β#≡  Δ≡i j≤Δ τ₂₁  Δ'τ₂ty •τₐty) (β#≡  Δ≡i j≤Δ  τ₂₂  Δ'τ₂ty •τₐty)
 ... | ty-sum τ₂₁ τ₂₂ = cong₂ _⨁_ (β#≡  Δ≡i j≤Δ τ₂₁  Δ'τ₂ty •τₐty) (β#≡  Δ≡i j≤Δ  τ₂₂  Δ'τ₂ty •τₐty)
+... | ty-list τ = cong List (β#≡  Δ≡i j≤Δ τ  Δ'τ₂ty •τₐty)
 ... | ty-all τall rewrite (inc-τ-β≡ {τ₂} {τₐ} {i} {0} z≤n •τₐty) =
     let 
         Δ'τ₂'ty = inc-τ-weaken0 Δ'τ₂ty 
@@ -697,14 +730,27 @@ subst'-τ : ∀ {Δ Γ i τ₁ τ₂ body} →
 subst'-τ •⊢τ₁ty |Δ|≡i (τ-true)       = τ-true
 subst'-τ •⊢τ₁ty |Δ|≡i (τ-false)       = τ-false
 subst'-τ •⊢τ₁ty |Δ|≡i (τ-zero)        = τ-zero
+subst'-τ •⊢τ₁ty |Δ|≡i (τ-unit)        = τ-unit
 subst'-τ •⊢τ₁ty |Δ|≡i (τ-suc τ₁)       = τ-suc (subst'-τ •⊢τ₁ty |Δ|≡i τ₁)
 subst'-τ •⊢τ₁ty |Δ|≡i (τ-pred τ₁)      = τ-pred (subst'-τ •⊢τ₁ty |Δ|≡i τ₁)
 subst'-τ •⊢τ₁ty |Δ|≡i (τ-zero? τ₁)     = τ-zero? (subst'-τ •⊢τ₁ty |Δ|≡i τ₁)
-subst'-τ •⊢τ₁ty |Δ|≡i (τ-if τ₁ τ₂ τ₃)      = τ-if (subst'-τ •⊢τ₁ty |Δ|≡i τ₁) (subst'-τ •⊢τ₁ty |Δ|≡i τ₂) (subst'-τ •⊢τ₁ty |Δ|≡i τ₃)      
-subst'-τ •⊢τ₁ty |Δ|≡i (τ-cons τ₁ τ₂) = τ-cons (subst'-τ •⊢τ₁ty |Δ|≡i τ₁) (subst'-τ •⊢τ₁ty |Δ|≡i τ₂)
+subst'-τ •⊢τ₁ty |Δ|≡i (τ-if τ₁ τ₂ τ₃)  = τ-if (subst'-τ •⊢τ₁ty |Δ|≡i τ₁) (subst'-τ •⊢τ₁ty |Δ|≡i τ₂) (subst'-τ •⊢τ₁ty |Δ|≡i τ₃)      
+subst'-τ •⊢τ₁ty |Δ|≡i (τ-cons τ₁ τ₂)   = τ-cons (subst'-τ •⊢τ₁ty |Δ|≡i τ₁) (subst'-τ •⊢τ₁ty |Δ|≡i τ₂)
 subst'-τ •⊢τ₁ty |Δ|≡i (τ-fst τ₁×₂)     = τ-fst (subst'-τ •⊢τ₁ty |Δ|≡i τ₁×₂)
 subst'-τ •⊢τ₁ty |Δ|≡i (τ-snd τ₁×₂)     = τ-snd (subst'-τ •⊢τ₁ty |Δ|≡i τ₁×₂)
-subst'-τ •⊢τ₁ty |Δ|≡i (τ-app fTy eTy)      = τ-app (subst'-τ •⊢τ₁ty |Δ|≡i fTy) (subst'-τ •⊢τ₁ty |Δ|≡i eTy)
+subst'-τ •⊢τ₁ty |Δ|≡i (τ-app fTy eTy)  = τ-app (subst'-τ •⊢τ₁ty |Δ|≡i fTy) (subst'-τ •⊢τ₁ty |Δ|≡i eTy)
+subst'-τ {Δ} {Γ} {i} {τ₁} {τ₂} •⊢τ₁ty |Δ|≡i (τ-nil τTy) =
+  let
+    Δ++•⊢τ₁ty = ty-weaken {Δ} {•} •⊢τ₁ty
+    Δ⊢τ₁ty    = subst (λ z → z ⊢ τ₁ ty) (concat-id' Δ) Δ++•⊢τ₁ty
+    i≤|Δ|     = ≤-reflexive (sym |Δ|≡i)
+    τTy'      = subst'-ty i≤|Δ| τTy Δ⊢τ₁ty
+  in
+    τ-nil τTy'
+subst'-τ •⊢τ₁ty |Δ|≡i (τ-nil? τ) = τ-nil? (subst'-τ •⊢τ₁ty |Δ|≡i τ)
+subst'-τ •⊢τ₁ty |Δ|≡i (τ-lcons τ₁ τ₂) = τ-lcons (subst'-τ •⊢τ₁ty |Δ|≡i τ₁) (subst'-τ •⊢τ₁ty |Δ|≡i τ₂)
+subst'-τ •⊢τ₁ty |Δ|≡i (τ-first τ) = τ-first (subst'-τ •⊢τ₁ty |Δ|≡i τ)
+subst'-τ •⊢τ₁ty |Δ|≡i (τ-rest τ) = τ-rest (subst'-τ •⊢τ₁ty |Δ|≡i τ)
 subst'-τ  {Δ} {Γ} {i} {τ₁} {τ₂} •⊢τ₁ty |Δ|≡i (τ-inl  {Δ'} {Γ'} {e} {τ1} {τ2} ΔTy lTy) = 
     let Δ++•⊢τ₁ty = ty-weaken {Δ} {•} •⊢τ₁ty
         Δ⊢τ₁ty = subst (λ z → (z ⊢ τ₁ ty)) (concat-id' Δ) Δ++•⊢τ₁ty

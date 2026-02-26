@@ -227,3 +227,52 @@ fib10 : Term
 fib10 = App fib (natLit 10)
 fib10τ : • ⨟ ∘ ⊢ fib10 ⦂ Nat
 fib10τ = τ-app fibτ (natLitTy 10)
+
+
+length : Term
+length =
+  LamT
+    (Fix (List (TVar 0) ⇒ Nat)
+      (Lam
+        (If (Nil? (Var 0))
+            Zero
+            (Suc (App (Var 1) (Rest (Var 0)))))))
+
+lengthτ : • ⨟ ∘ ⊢ length ⦂ ∀' (List (TVar 0) ⇒ Nat)
+lengthτ =
+  τ-lamT
+    (τ-fix
+      (ty-arr (ty-list (ty-var refl)) ty-nat) -- ∀α. List α ⇒ Nat
+      (τ-lam                                  -- lambda 
+        (ty-list (ty-var refl))               -- ls
+        (τ-if
+          (τ-nil? (τ-var (ty-list (ty-var refl)) refl)) -- Nil? ls
+          τ-zero                                        -- 0
+          (τ-suc                                        -- 1 + 
+            (τ-app
+              (τ-var (ty-arr (ty-list (ty-var refl)) ty-nat) refl) -- length ...
+              (τ-rest
+                (τ-var (ty-list (ty-var refl)) refl)))))))         -- Rest ls
+
+listOf3 : Term
+listOf3 =
+  LCons (natLit 1)
+    (LCons (natLit 2)
+      (LCons (natLit 3)
+        (Nil Nat)))
+
+listOf3τ : • ⨟ ∘ ⊢ listOf3 ⦂ List Nat
+listOf3τ =
+  τ-lcons (natLitTy 1)
+    (τ-lcons (natLitTy 2)
+      (τ-lcons (natLitTy 3)
+        (τ-nil ty-nat)))
+
+length-listOf3τ : • ⨟ ∘ ⊢ App (AppT length Nat) listOf3 ⦂ Nat
+length-listOf3τ =
+  τ-app
+    (τ-appT ty-nat lengthτ)   -- swapped!
+    listOf3τ
+
+evalLengthListOf3 : Maybe ℕ
+evalLengthListOf3 = evalNat length-listOf3τ 100

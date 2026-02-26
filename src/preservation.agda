@@ -74,3 +74,37 @@ preservation (τ-appT ΔTy fTy) (ss-appT-func stepf)            = τ-appT ΔTy (
 
 -- appT : beta
 preservation (τ-appT ΔTy (τ-lamT {Δ} {Γ} {τ} {e} bodyTy)) (ss-appT-beta)  =  subst0'-τ ΔTy bodyTy
+
+-- nil?
+preservation (τ-nil? τ) (ss-nil-step step) = τ-nil? (preservation τ step)
+preservation (τ-nil? τ) (ss-nil-true) = τ-true
+preservation (τ-nil? τ) (ss-nil-false vVal vsVal) = τ-false
+
+-- lcons
+preservation (τ-lcons τ₁ τ₂) (ss-lcons-first-step step) = τ-lcons (preservation τ₁ step) τ₂
+preservation (τ-lcons τ₁ τ₂) (ss-lcons-rest-step v1 step) = τ-lcons τ₁ (preservation τ₂ step)
+
+-- First: congruence
+preservation (τ-first te) (ss-first-step step) =
+  τ-first (preservation te step)
+
+-- First Nil ↦ Inl ⋆
+preservation (τ-first (τ-nil τTy)) (ss-first-nil {τ = τ}) =
+  τ-inl τTy τ-unit
+
+-- First (LCons x xs) ↦ Inr x
+preservation (τ-first (τ-lcons {τ = τ} xTy xsTy)) (ss-first-lcons xVal xsVal) =
+  τ-inr ty-unit xTy
+
+
+-- Rest: congruence
+preservation (τ-rest te) (ss-rest-step step) =
+  τ-rest (preservation te step)
+
+-- Rest Nil ↦ Nil
+preservation (τ-rest (τ-nil τTy)) (ss-rest-nil {τ = τ}) =
+  τ-nil τTy
+
+-- Rest (LCons x xs) ↦ xs
+preservation (τ-rest (τ-lcons {τ = τ} xTy xsTy)) (ss-rest-lcons xVal xsVal) =
+  xsTy
