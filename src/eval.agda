@@ -519,3 +519,54 @@ add-twoτ =
 
 res : Maybe ℕ
 res = evalNat (τ-app add-twoτ (natLitTy 10)) 100
+
+
+add-lengths-of-different-typed-lists : Term
+add-lengths-of-different-typed-lists =
+  (LamT -- A
+    (LamT -- B
+      (Lam -- xs -- type List A
+        (Lam -- ys -- type List B
+          (App (App add (App (AppT length (TVar 1)) (Var 1))) -- length A xs
+               (App (AppT length (TVar 0)) (Var 0))))))) -- length B ys
+
+add-lengths-of-different-typed-listsτ : • ⨟ ∘ ⊢ add-lengths-of-different-typed-lists ⦂ ∀' (∀' ((List (TVar 1)) ⇒ (List (TVar 0)) ⇒ Nat))
+add-lengths-of-different-typed-listsτ =
+  τ-lamT          -- A
+    (τ-lamT       -- B
+      (τ-lam (ty-list (ty-var refl))                        -- xs
+        (τ-lam (ty-list (ty-var refl))                        -- ys
+          (τ-app 
+            (τ-app 
+              (weaken-closed addτ) 
+              (τ-app (τ-appT (ty-var refl) (weaken-closed lengthτ)) (τ-var (ty-list (ty-var refl)) refl))) 
+            (τ-app 
+              (τ-appT 
+                (ty-var refl) 
+                (weaken-closed lengthτ)) 
+              ((τ-var 
+                (ty-list (ty-var refl)) 
+                refl)))))))
+
+evalAddLengthsOfDifferentTypedLists : Term
+evalAddLengthsOfDifferentTypedLists = 
+  App
+    (App
+      (AppT 
+        (AppT add-lengths-of-different-typed-lists Nat)
+        Bool)
+      listOf3)
+    listOf4Bools
+
+evalAddLengthsOfDifferentTypedListsτ : • ⨟ ∘ ⊢ evalAddLengthsOfDifferentTypedLists ⦂ Nat
+evalAddLengthsOfDifferentTypedListsτ =
+  τ-app
+    (τ-app
+      (τ-appT
+        ty-bool
+        (τ-appT ty-nat add-lengths-of-different-typed-listsτ))
+      listOf3τ)
+    listOf4Boolsτ
+
+evalAddLengthsOfDifferentTypedListsRes : Maybe ℕ
+evalAddLengthsOfDifferentTypedListsRes = evalNat evalAddLengthsOfDifferentTypedListsτ 100
