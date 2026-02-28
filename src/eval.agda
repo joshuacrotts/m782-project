@@ -301,3 +301,196 @@ evalLengthListOf3 = evalNat length-listOf3τ 100
 
 evalLengthListOf4Bools : Maybe ℕ
 evalLengthListOf4Bools = evalNat length-listOf4Boolsτ 100
+
+
+
+snocℕ : Term
+snocℕ =
+  Fix
+    (List Nat ⇒ Nat ⇒ List Nat)
+    (Lam                      -- xs
+      (Lam                    -- x
+        (If (Nil? (Var 1))
+            (LCons (Var 0) (Nil Nat))
+            (Case (First (Var 1))
+
+              -- left branch: impossible (xs was Nil),
+              -- but must return List Nat
+              (LCons (Var 1) (Nil Nat))
+
+              -- right branch: binder h : Nat at Var 0
+              (LCons (Var 0)
+                (App
+                  (App (Var 3) (Rest (Var 2)))
+                  (Var 1)))))))
+
+snocℕτ : • ⨟ ∘ ⊢ snocℕ ⦂ List Nat ⇒ Nat ⇒ List Nat
+snocℕτ =
+  τ-fix
+    (ty-arr (ty-list ty-nat) (ty-arr ty-nat (ty-list ty-nat)))
+    (τ-lam
+      (ty-list ty-nat)
+      (τ-lam
+        ty-nat
+        (τ-if
+          (τ-nil? (τ-var (ty-list ty-nat) refl))
+          (τ-lcons (τ-var ty-nat refl) (τ-nil ty-nat))
+          (τ-case
+            (τ-first (τ-var (ty-list ty-nat) refl))
+            (τ-lcons (τ-var ty-nat refl) (τ-nil ty-nat)) -- impossible case, but must return List Nat
+            (τ-lcons (τ-var ty-nat refl)
+              (τ-app
+                (τ-app (τ-var (ty-arr (ty-list ty-nat) (ty-arr ty-nat (ty-list ty-nat))) refl)
+                       (τ-rest (τ-var (ty-list ty-nat) refl)))
+                (τ-var ty-nat refl)))))))
+
+snoc123 : Term
+snoc123 = App (App snocℕ listOf3) (natLit 4)
+
+snoc123τ : • ⨟ ∘ ⊢ snoc123 ⦂ List Nat
+snoc123τ =
+  τ-app
+    (τ-app snocℕτ listOf3τ)
+    (natLitTy 4)
+
+snocPoly : Term
+snocPoly =
+  Fix
+    (∀' (List (TVar 0) ⇒ TVar 0 ⇒ List (TVar 0)))
+    (LamT
+      (Lam                      -- xs
+        (Lam                    -- x
+          (If (Nil? (Var 1))
+              (LCons (Var 0) (Nil (TVar 0)))
+              (Case (First (Var 1))
+                -- impossible case, but must return List (TVar 0)
+                (LCons (Var 1) (Nil (TVar 0)))
+                -- right branch: binder h : TVar 0 at Var 0
+                (LCons (Var 0)
+                  (App
+                    (App
+                      (AppT (Var 3) (TVar 0))   -- instantiate rec at A
+                      (Rest (Var 2)))
+                    (Var 1))))))))
+
+
+snocPolyτ : • ⨟ ∘ ⊢ snocPoly ⦂ ∀' (List (TVar 0) ⇒ TVar 0 ⇒ List (TVar 0))
+snocPolyτ =
+  τ-fix
+    (ty-all
+      (ty-arr (ty-list (ty-var refl))
+        (ty-arr (ty-var refl)
+          (ty-list (ty-var refl)))))
+    (τ-lamT
+      (τ-lam (ty-list (ty-var refl))
+        (τ-lam (ty-var refl)
+          (τ-if
+            (τ-nil? (τ-var (ty-list (ty-var refl)) refl))
+
+            -- then: cons x []
+            (τ-lcons
+              (τ-var (ty-var refl) refl)
+              (τ-nil (ty-var refl)))
+
+            -- else: case (First xs) ...
+            (τ-case
+              (τ-first (τ-var (ty-list (ty-var refl)) refl))
+
+              -- left branch: impossible but must return List A
+              (τ-lcons
+                (τ-var (ty-var refl) refl)
+                (τ-nil (ty-var refl)))
+
+              -- right branch: binder h : A at Var 0
+              (τ-lcons
+                (τ-var (ty-var refl) refl)
+                (τ-app 
+                  (τ-app
+                    (τ-appT
+                      (ty-var refl) (τ-var (ty-all (ty-arr (ty-list (ty-var refl))
+  (ty-arr (ty-var refl)
+    (ty-list (ty-var refl))))) refl))
+                      (τ-rest (τ-var (ty-list (ty-var refl)) refl)))
+                      (τ-var (ty-var refl) refl))))))))
+
+snocPolyListOf3 : Term
+snocPolyListOf3 = App (App (AppT snocPoly Nat) listOf3) (natLit 4)
+
+snocPolyListOf3τ : • ⨟ ∘ ⊢ snocPolyListOf3 ⦂ List Nat
+snocPolyListOf3τ =
+  τ-app
+    (τ-app (τ-appT ty-nat snocPolyτ) listOf3τ)
+    (natLitTy 4)
+
+append : Term
+append =
+  Fix
+    (∀' (List (TVar 0) ⇒ List (TVar 0) ⇒ List (TVar 0)))
+    (LamT
+      (Lam                      -- xs
+        (Lam                    -- ys
+          (If (Nil? (Var 1))
+              (Var 0) -- nil ++ ys = ys
+              (Case (First (Var 1))
+                -- impossible case, but must return List A
+                (Var 1)
+                -- right branch: binder h : A at Var 0
+                -- var 0 is h, var 1 is ys, var 2 is xs, var 3 is rec
+                (LCons (Var 0)
+                       (App 
+                          (App
+                            (AppT (Var 3) (TVar 0))
+                            (Rest (Var 2)))
+                          (Var 1))))))))
+
+appendτ : • ⨟ ∘ ⊢ append ⦂ ∀' (List (TVar 0) ⇒ List (TVar 0) ⇒ List (TVar 0))
+appendτ = 
+  τ-fix 
+    (ty-all
+      (ty-arr (ty-list (ty-var refl))
+        (ty-arr (ty-list (ty-var refl))
+          (ty-list (ty-var refl)))))
+    (τ-lamT 
+      (τ-lam (ty-list (ty-var refl))       -- xs : List A
+        (τ-lam (ty-list (ty-var refl))     -- ys : List A
+          (τ-if
+            (τ-nil? (τ-var {n = 1} (ty-list (ty-var refl)) refl))  -- Nil? xs
+            (τ-var  {n = 0} (ty-list (ty-var refl)) refl)          -- then: ys
+            (τ-case (τ-first (τ-var {n = 1} (ty-list (ty-var refl)) refl)) -- else: case (First xs)
+                    (τ-var {n = 1} (ty-list (ty-var refl)) refl)           -- if Nil, impossible but must return, so we return xs.
+                    (τ-lcons (τ-var (ty-var refl) refl)
+                             (τ-app 
+                               (τ-app 
+                                 (τ-appT (ty-var refl) 
+                                         (τ-var (ty-all (ty-arr (ty-list (ty-var refl)) (ty-arr (ty-list (ty-var refl)) (ty-list (ty-var refl))))) refl)) 
+                                 (τ-rest (τ-var (ty-list ((ty-var refl))) refl))) 
+                               (τ-var {n = 1} (ty-list ((ty-var refl))) refl)))))))) -- if Cons, then cons head onto recursive call on tail and ys
+
+list123 : Term
+list123 = LCons (natLit 1) (LCons (natLit 2) (LCons (natLit 3) (Nil Nat)))
+list123τ : • ⨟ ∘ ⊢ list123 ⦂ List Nat
+list123τ =
+  τ-lcons (natLitTy 1)
+    (τ-lcons (natLitTy 2)
+      (τ-lcons (natLitTy 3)
+        (τ-nil ty-nat)))
+
+list45 : Term
+list45 = LCons (natLit 4) (LCons (natLit 5) (Nil Nat))
+list45τ : • ⨟ ∘ ⊢ list45 ⦂ List Nat
+list45τ =
+  τ-lcons (natLitTy 4)
+    (τ-lcons (natLitTy 5)
+      (τ-nil ty-nat))
+
+
+append123to45 : Term
+append123to45 = App (App (AppT append Nat) list123) list45
+
+append123to45τ : • ⨟ ∘  ⊢ append123to45 ⦂ List Nat
+append123to45τ =
+  τ-app
+    (τ-app (τ-appT ty-nat appendτ) list123τ)
+    list45τ
+
+
