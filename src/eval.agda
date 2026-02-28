@@ -451,20 +451,21 @@ appendτ =
         (ty-arr (ty-list (ty-var refl))
           (ty-list (ty-var refl)))))
     (τ-lamT 
-      (τ-lam (ty-list (ty-var refl))       -- xs : List A
-        (τ-lam (ty-list (ty-var refl))     -- ys : List A
-          (τ-if
-            (τ-nil? (τ-var {n = 1} (ty-list (ty-var refl)) refl))  -- Nil? xs
-            (τ-var  {n = 0} (ty-list (ty-var refl)) refl)          -- then: ys
-            (τ-case (τ-first (τ-var {n = 1} (ty-list (ty-var refl)) refl)) -- else: case (First xs)
-                    (τ-var {n = 1} (ty-list (ty-var refl)) refl)           -- if Nil, impossible but must return, so we return xs.
-                    (τ-lcons (τ-var (ty-var refl) refl)
-                             (τ-app 
-                               (τ-app 
-                                 (τ-appT (ty-var refl) 
-                                         (τ-var (ty-all (ty-arr (ty-list (ty-var refl)) (ty-arr (ty-list (ty-var refl)) (ty-list (ty-var refl))))) refl)) 
-                                 (τ-rest (τ-var (ty-list ((ty-var refl))) refl))) 
-                               (τ-var {n = 1} (ty-list ((ty-var refl))) refl)))))))) -- if Cons, then cons head onto recursive call on tail and ys
+ (τ-lam
+    (ty-list (ty-var refl))
+    (τ-lam
+     (ty-list (ty-var refl))
+     (τ-if
+      (τ-nil? (τ-var (ty-list (ty-var refl)) refl))
+      (τ-var (ty-list (ty-var refl)) refl)
+      (τ-case
+       (τ-first (τ-var (ty-list (ty-var refl)) refl))
+       (τ-var (ty-list (ty-var refl)) refl)
+       (τ-lcons
+        (τ-var (ty-var refl) refl)
+        (τ-app
+         (τ-app (τ-appT (ty-var refl) (τ-var (ty-all (ty-arr (ty-list (ty-var refl)) (ty-arr (ty-list (ty-var refl)) (ty-list (ty-var refl))))) refl)) (τ-rest (τ-var (ty-list (ty-var refl)) refl)))
+         (τ-var (ty-list (ty-var refl)) refl)))))))) -- if Cons, then cons head onto recursive call on tail and ys
 
 list123 : Term
 list123 = LCons (natLit 1) (LCons (natLit 2) (LCons (natLit 3) (Nil Nat)))
@@ -493,4 +494,28 @@ append123to45τ =
     (τ-app (τ-appT ty-nat appendτ) list123τ)
     list45τ
 
+apply-func : Term
+apply-func = 
+  (Lam 
+    (Lam
+      (App (Var 1) (Var 0))))
 
+apply-funcτ : • ⨟ ∘ ⊢ apply-func ⦂ ((Nat ⇒ Nat) ⇒ Nat ⇒ Nat)
+apply-funcτ =
+  τ-lam
+    (ty-arr ty-nat ty-nat)
+    (τ-lam
+      ty-nat
+      (τ-app
+        (τ-var (ty-arr ty-nat ty-nat) refl)
+        (τ-var ty-nat refl)))
+
+add-two : Term
+add-two = App apply-func (App add (natLit 2))
+
+add-twoτ : • ⨟ ∘ ⊢ add-two ⦂ Nat ⇒ Nat
+add-twoτ =
+  τ-app apply-funcτ (τ-app addτ (natLitTy 2))
+
+res : Maybe ℕ
+res = evalNat (τ-app add-twoτ (natLitTy 10)) 100
