@@ -538,7 +538,7 @@ add-lengths-of-different-typed-listsτ =
         (τ-lam (ty-list (ty-var refl))                        -- ys
           (τ-app 
             (τ-app 
-              (weaken-closed addτ) 
+              (weaken-closed addτ)
               (τ-app (τ-appT (ty-var refl) (weaken-closed lengthτ)) (τ-var (ty-list (ty-var refl)) refl))) 
             (τ-app 
               (τ-appT 
