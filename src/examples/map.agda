@@ -121,3 +121,8 @@ mapZero?ToNatListτ =
           ty-nat 
           (τ-if (τ-zero? (τ-var ty-nat refl)) τ-true τ-false)))
     listOf3τ
+
+------------------------------------
+-- TO RUN:                        --
+-- eval mapZero?ToNatListτ 100000 --
+------------------------------------
