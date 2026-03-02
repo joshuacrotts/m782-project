@@ -1,54 +1,63 @@
 module examples.length where
 
-open import Data.Nat using (ℕ; zero; suc)
-open import Data.Maybe using (Maybe; just; nothing)
-open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Data.Bool using (true; false) renaming (Bool to 𝔹)
-open import Data.Product using (Σ; Σ-syntax; _,_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-
-open import SystemF.terms
-open import SystemF.types
-open import SystemF.typing
-open import SystemF.values
-open import SystemF.semantics
-open import SystemF.typing
-open import progress
-open import preservation
-open import lemma using (weaken-closed)
-
-import SystemF.context as C
-open C using (TypeContext; •; TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
-
-open import examples.eval-driver
+open import examples.prelude  
 open import examples.add
 open import examples.mul
 
 
+length-nat : Term
+length-nat = 
+  (Fix
+  ((List Nat) ⇒ Nat)
+  (Lam (If (Nil? (Var 0)) Zero (Suc (App (Var 1) (Rest (Var 0)))))))
+
+
+length-natτ : • ⨟ ∘ ⊢ length-nat ⦂ (List Nat) ⇒ Nat
+length-natτ = 
+  (τ-fix
+  (ty-arr (ty-list ty-nat) ty-nat)
+  (τ-lam
+   (ty-list ty-nat)
+   (τ-if
+    (τ-nil? (τ-var {n = 0} (ty-list ty-nat) refl))
+    τ-zero
+    (τ-suc
+     (τ-app
+      (τ-var {n = 1} (ty-arr (ty-list ty-nat) ty-nat) refl)
+      (τ-rest (τ-var {n = 0} (ty-list ty-nat) refl)))))))
+
 length : Term
 length =
-  LamT
-    (Fix (List (TVar 0) ⇒ Nat)
-      (Lam
-        (If (Nil? (Var 0))
-            Zero
-            (Suc (App (Var 1) (Rest (Var 0)))))))
+  (Fix
+  (∀' ((List (TVar 0)) ⇒ Nat))
+  (LamT
+   (Lam
+    (If
+     (Nil? (Var 0))
+     Zero
+     (Suc (App (AppT (Var 1) (TVar 0)) (Rest (Var 0))))))))
 
-lengthτ : • ⨟ ∘ ⊢ length ⦂ ∀' (List (TVar 0) ⇒ Nat)
+
+
+lengthτ : • ⨟ ∘ ⊢ length ⦂ ∀' ((List (TVar 0)) ⇒ Nat)
 lengthτ =
-  τ-lamT
-    (τ-fix
-      (ty-arr (ty-list (ty-var refl)) ty-nat) -- ∀α. List α ⇒ Nat
-      (τ-lam                                  -- lambda 
-        (ty-list (ty-var refl))               -- ls
-        (τ-if
-          (τ-nil? (τ-var (ty-list (ty-var refl)) refl)) -- Nil? ls
-          τ-zero                                        -- 0
-          (τ-suc                                        -- 1 + 
-            (τ-app
-              (τ-var (ty-arr (ty-list (ty-var refl)) ty-nat) refl) -- length ...
-              (τ-rest
-                (τ-var (ty-list (ty-var refl)) refl)))))))         -- Rest ls
+  (τ-fix
+  (ty-all (ty-arr (ty-list (ty-var {n = 0} refl)) ty-nat))
+  (τ-lamT
+   (τ-lam
+    (ty-list (ty-var {n = 0} refl))
+    (τ-if
+     (τ-nil? (τ-var {n = 0} (ty-list (ty-var {n = 0} refl)) refl))
+     τ-zero
+     (τ-suc
+      (τ-app
+       (τ-appT
+        (ty-var {n = 0} refl)
+        (τ-var
+         {n = 1}
+         (ty-all (ty-arr (ty-list (ty-var {n = 0} refl)) ty-nat))
+         refl))
+       (τ-rest (τ-var {n = 0} (ty-list (ty-var {n = 0} refl)) refl))))))))
 
 listOf3 : Term
 listOf3 =

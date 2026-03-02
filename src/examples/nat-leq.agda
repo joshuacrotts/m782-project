@@ -1,26 +1,6 @@
 module examples.nat-leq where
 
-open import Data.Nat using (ℕ; zero; suc)
-open import Data.Maybe using (Maybe; just; nothing)
-open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Data.Bool using (true; false) renaming (Bool to 𝔹)
-open import Data.Product using (Σ; Σ-syntax; _,_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-
-open import SystemF.terms
-open import SystemF.types
-open import SystemF.typing
-open import SystemF.values
-open import SystemF.semantics
-open import SystemF.typing
-open import progress
-open import preservation
-open import lemma using (weaken-closed)
-
-import SystemF.context as C
-open C using (TypeContext; •; TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
-
-open import examples.eval-driver
+open import examples.prelude
 
 -- Less than or equal to over natural numbers.
 
