@@ -62,6 +62,8 @@
                              [else (lex-helper (cdr ls) v (add1 acc))]))])
                  (lex-helper ls v 0))))))
 
+;; lex-ty : [ListOf TypeVar] TypeVar -> NaturalNumber
+;;
 (define lex-ty
   (lambda (ls v)
     (cond
@@ -75,6 +77,8 @@
 ;; Type → Agda term (for Fix annotation)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; type->agda-term : Type [ListOf TypeVar] -> AgdaTerm
+;;
 (define type->agda-term
   (λ (ty tyvars)
     (match ty
@@ -90,6 +94,8 @@
 ;; Type → Agda type object
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; type->agda-type : Type [ListOf TypeVar] -> AgdaType
+;;
 (define type->agda-type
   (λ (ty tyvars)
     (match ty
@@ -101,19 +107,24 @@
       [`(List ,v) `(ty-list ,(type->agda-type v tyvars))])))
 
 
+;; count-∀ : Term -> [ListOf TypeVar]
+;;
 (define count-∀
   (λ (term)
     (match term
-      [`(∀ ,t ,body)
-       (cons t (count-∀ body))]
+      [`(∀ ,t ,body) (append (count-∀ body) (list t))]
       [_ '()])))
 
+;; create-foralls-ty : Type NaturalNumber -> AgdaType
+;;
 (define create-foralls-ty
   (λ (ty n)
     (cond
       [(zero? n) ty]
       [`(τ-lamT ,(create-foralls-ty ty (sub1 n)))])))
 
+;; create-foralls-ty : Term NaturalNumber -> AgdaTerm
+;;
 (define create-foralls
   (λ (term n)
     (cond
@@ -133,7 +144,8 @@
              (if (false? lookup) v `(Var ,lookup)))]
       [`,v #:when (ty-var? v) `(TVar ,(lex Δ v))]
       [`,n #:when (number? n) (from-nat n)]
-      [`,b #:when (boolean? b) b]
+      [`,true #:when (boolean? b) 'True]
+      [`,false #:when (boolean? b) 'False]
       [`(null? ,e) `(Nil? ,(interp e Γ Δ))]
       [`(add1 ,e) `(Suc ,(interp e Γ Δ))]
       [`(sub1 ,e) `(Pred ,(interp e Γ Δ))]
@@ -184,6 +196,10 @@
       [`(first ,e) `(τ-first ,(interp-ty e Γ Δ))]
       [`(rest ,e) `(τ-rest ,(interp-ty e Γ Δ))]
       [`(lcons ,x ,xs) `(τ-lcons ,(interp-ty x Γ Δ) ,(interp-ty xs Γ Δ))]
+      [`(case ,scrut ,left ((,x : ,τ) => ,right))
+       `(τ-case ,(interp-ty scrut Γ Δ)
+                ,(interp-ty left (cons (cons '() 'Unit) Γ) Δ)
+                ,(interp-ty right (cons (cons x τ) Γ) Δ))]
       [`(lambda (,v : ,τ) ,body)
        `(τ-lam
           ,(type->agda-type τ Δ)
@@ -198,6 +214,7 @@
       [`(,rator ,rand) `(τ-app ,(interp-ty rator Γ Δ) ,(interp-ty rand Γ Δ))]
       [`(fix ,ty ,name ,e)
        (let* ([Δ′ (count-∀ ty)])
+         (printf "Δ′ = ~a\n" Δ′)
          `(τ-fix ,(type->agda-type ty Δ′)
                ,(create-foralls-ty (interp-ty e
                                         (cons (cons name ty) Γ)
@@ -248,7 +265,7 @@
 
 
 (define append-example
-  `(fix (∀ A ((List A) ⇒ ((List A) ⇒ (List A)))
+  `(fix (∀ A ((List A) ⇒ ((List A) ⇒ (List A))))
            append
            (lambda (ls1 : (List A))
              (lambda (ls2 : (List A))
@@ -257,15 +274,49 @@
                      ls2
                      ((h : A) => (lcons h (((append @ A)
                                             (rest ls1))
-                                           ls2))))))))))
+                                           ls2)))))))))
 
+(define map-example
+  `(fix (∀ A (∀ B ((A ⇒ B) ⇒ ((List A) ⇒ (List B)))))
+        map
+        (lambda (f : (A ⇒ B))
+          (lambda (ls : (List A))
+            (if (null? ls) ls
+                (case (first ls)
+                  ls
+                  ((h : A) => (lcons (f h) ((((append @ A) @ B) f) (rest ls))))))))))
 
+(define leq-example
+  `(fix (Nat ⇒ (Nat ⇒ Bool))
+        `leq
+        (lambda (a : Nat)
+          (lambda (b : Nat)
+            (if (zero? a)
+                true
+                (if (zero? b)
+                    false
+                    ((leq (sub1 a)) (sub1 b))))))))
+        
+
+(printf "---------------------------------------\n")
+(printf "-------------   LENGTH ----------------\n")
 (pretty-print (interp length-example '() '()))
 (pretty-print (interp-ty length-example '() '()))
 
+(printf "---------------------------------------\n")
+(printf "-------------   APPEND ----------------\n")
 (pretty-print (interp append-example '() '()))
-  
+(pretty-print (interp-ty append-example '() '()))
 
+(printf "---------------------------------------\n")
+(printf "-------------   MAP -------------------\n")
+(pretty-print (interp map-example '() '()))
+(pretty-print (interp-ty map-example '() '()))
+
+(printf "---------------------------------------\n")
+(printf "-------------   LEQ -------------------\n")
+(pretty-print (interp leq-example '() '()))
+(pretty-print (interp-ty leq-example '() '()))
 
 ;; Convenience: run these in the REPL
 ;; (interp append-example '() '())
