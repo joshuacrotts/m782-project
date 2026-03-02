@@ -31,6 +31,10 @@
         'Zero
         `(Suc ,(from-nat (sub1 n))))))
 
+(define from-bool
+  (λ (b)
+    (if (or (eqv? b #t) b 'true) 'True 'False)))
+
 (define from-nat-ty
   (λ (n)
     (if (zero? n)
@@ -136,16 +140,18 @@
 ;; interp : surface → Agda term
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; interp : Term [AssocOf Var Type] [ListOf TypeVar] -> AgdaTerm
+;;
 (define interp
   (λ (exp Γ Δ)
+    (printf "exp=~a\n" exp)
     (match exp
       [`,v #:when (var? v)
            (let ([lookup (lex Γ v)])
              (if (false? lookup) v `(Var ,lookup)))]
       [`,v #:when (ty-var? v) `(TVar ,(lex Δ v))]
       [`,n #:when (number? n) (from-nat n)]
-      [`,true #:when (boolean? b) 'True]
-      [`,false #:when (boolean? b) 'False]
+      [`,b #:when (boolean? b) (from-bool b)]
       [`(null? ,e) `(Nil? ,(interp e Γ Δ))]
       [`(add1 ,e) `(Suc ,(interp e Γ Δ))]
       [`(sub1 ,e) `(Pred ,(interp e Γ Δ))]
@@ -178,6 +184,8 @@
 ;; interp-ty : surface → Agda typing proof
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; interp-ty : Term [AssocOf Var Type] [ListOf TypeVar] -> AgdaType
+;;
 (define interp-ty
   (λ (exp Γ Δ)
     (match exp
@@ -214,7 +222,6 @@
       [`(,rator ,rand) `(τ-app ,(interp-ty rator Γ Δ) ,(interp-ty rand Γ Δ))]
       [`(fix ,ty ,name ,e)
        (let* ([Δ′ (count-∀ ty)])
-         (printf "Δ′ = ~a\n" Δ′)
          `(τ-fix ,(type->agda-type ty Δ′)
                ,(create-foralls-ty (interp-ty e
                                         (cons (cons name ty) Γ)
@@ -288,14 +295,54 @@
 
 (define leq-example
   `(fix (Nat ⇒ (Nat ⇒ Bool))
-        `leq
+        leq
         (lambda (a : Nat)
           (lambda (b : Nat)
             (if (zero? a)
-                true
+                #t
                 (if (zero? b)
-                    false
+                    #f
                     ((leq (sub1 a)) (sub1 b))))))))
+
+(define insert-into-sorted-example
+  `(fix (∀ A ((A ⇒ (A ⇒ Bool)) ⇒ (A ⇒ ((List A) ⇒ (List A)))))
+        insert-into-sorted
+        (lambda (cmpleq : (A ⇒ (A ⇒ Bool)))
+          (lambda (v : A)
+            (lambda (ls : (List A))
+              (if (null? ls)
+                  (lcons v nil)
+                  (case (first ls)
+                    ls
+                    ((h : A) => (if ((cmpleq v) h)
+                                    (lcons v ls)
+                                    (lcons h ((((insert-into-sorted @ A) cmpleq) v) (rest ls))))))))))))
+
+(define isort-example
+  `(fix (∀ A ((A ⇒ (A ⇒ Bool)) ⇒ ((List A) ⇒ (List A))))
+        isort
+        (lambda (cmpleq : (A ⇒ (A ⇒ Bool)))
+          (lambda (ls : (List A))
+            (if (null? ls)
+                ls
+                ((((insert-into-sorted @ A) cmpleq) (first ls)) (((isort @ A) cmpleq) (rest ls))))))))
+
+(define isort
+  (lambda (cmpleq)
+    (lambda (ls)
+      (if (null? ls)
+          ls
+          (((insert-into-sorted cmpleq) (first ls)) ((isort cmpleq) (rest ls)))))))
+
+(define insert-into-sorted
+  (lambda (cmpleq)
+    (lambda (v)
+      (lambda (ls)
+        (if (null? ls)
+            (list v)
+            (if (cmpleq v (first ls))
+                (cons v ls)
+                (cons (first ls) (((insert-into-sorted cmpleq) v) (rest ls)))))))))
         
 
 (printf "---------------------------------------\n")
@@ -317,6 +364,11 @@
 (printf "-------------   LEQ -------------------\n")
 (pretty-print (interp leq-example '() '()))
 (pretty-print (interp-ty leq-example '() '()))
+
+(printf "---------------------------------------\n")
+(printf "-------------   ISort -------------------\n")
+(pretty-print (interp isort-example '() '()))
+(pretty-print (interp-ty isort-example '() '()))
 
 ;; Convenience: run these in the REPL
 ;; (interp append-example '() '())
