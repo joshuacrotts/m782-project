@@ -8,7 +8,7 @@ open import Data.Product using (Σ; Σ-syntax; _,_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import SystemF.terms
-open import SystemF.types
+open import SystemF.types 
 open import SystemF.typing
 open import SystemF.values
 open import SystemF.semantics
@@ -19,6 +19,10 @@ open import lemma using (weaken-closed)
 
 import SystemF.context as C
 open C using (TypeContext; •; TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
+
+import Data.List as AgdaList
+open AgdaList using ([]; _∷_)
+
 
 --
 -- Given a term that is a number, convert it into a ℕ.
@@ -39,6 +43,17 @@ toBool : Term → Maybe 𝔹
 toBool True  = just true
 toBool False = just false
 toBool _     = nothing
+
+--
+-- Given a term that is a list of numbers, convert it into a List ℕ.
+-- If it's not a list of numbers, return nothing.
+--
+toListOfℕ : Term → Maybe (AgdaList.List ℕ)
+toListOfℕ (Nil Nat) = just []
+toListOfℕ (LCons t ts) with toℕ t | toListOfℕ ts
+... | just n  | just ns  = just (n ∷ ns)
+... | _       | _       = nothing
+toListOfℕ _   = nothing
 
 -- 
 -- Eval partial function, use n steps to limit evaluation depth.
@@ -67,6 +82,11 @@ evalNat te fuel with eval te fuel
 evalBool : ∀ {e} → (te : • ⨟ ∘ ⊢ e ⦂ Bool) → ℕ → Maybe 𝔹
 evalBool te fuel with eval te fuel
 ... | just v  = toBool v
+... | nothing = nothing
+
+evalListOfNat : ∀ {e} → (te : • ⨟ ∘ ⊢ e ⦂ List Nat) → ℕ → Maybe (AgdaList.List ℕ)
+evalListOfNat te fuel with eval te fuel
+... | just v  = toListOfℕ v
 ... | nothing = nothing
 
 --
