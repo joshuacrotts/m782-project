@@ -27,7 +27,7 @@ We are currently stuck on trying to implement variable bindings for functions an
 
 ### Week 6: Sums
 
-### Week 7 - ?: Polymorphism
+### Week 7 - 8: Polymorphism
 
 We are currently stuck with trying to prove a few lemmas regarding type variables. If we do not make any progress in a few weeks, we will likely downsize the project to STLC but with a few extra features, e.g., lists, and so forth.
 
