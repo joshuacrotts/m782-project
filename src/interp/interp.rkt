@@ -72,7 +72,6 @@
   (lambda (ls v)
     (cond
       [(null? ls)
-       (printf "ls=~a, v=~a\n" ls v)
        (error "this shouldn't occur")]
       [(eqv? (car ls) v) 0]
       [(add1 (lex-ty (cdr ls) v))])))
@@ -144,7 +143,6 @@
 ;;
 (define interp
   (λ (exp Γ Δ)
-    (printf "exp=~a\n" exp)
     (match exp
       [`,v #:when (var? v)
            (let ([lookup (lex Γ v)])
@@ -159,6 +157,9 @@
       [`(first ,e) `(First ,(interp e Γ Δ))]
       [`(rest ,e) `(Rest ,(interp e Γ Δ))]
       [`(lcons ,x ,xs) `(LCons ,(interp x Γ Δ) ,(interp xs Γ Δ))]
+      [`(let ((,v : ,τ) ,expr) ,body)
+       `(App (Lam ,(interp body (cons (cons v τ) Γ) Δ))
+             ,(interp expr Γ Δ))]
       [`(lambda (,v : ,τ) ,body) `(Lam ,(interp body (cons (cons v τ) Γ) Δ))]
       [`(if ,p ,c ,a)
        `(If ,(interp p Γ Δ)
@@ -208,6 +209,9 @@
        `(τ-case ,(interp-ty scrut Γ Δ)
                 ,(interp-ty left (cons (cons '() 'Unit) Γ) Δ)
                 ,(interp-ty right (cons (cons x τ) Γ) Δ))]
+      [`(let ((,v : ,τ) ,expr) ,body)
+       `(τ-app (τ-lam ,(type->agda-type τ Δ) ,(interp-ty body (cons (cons v τ) Γ) Δ))
+               ,(interp-ty expr Γ Δ))]
       [`(lambda (,v : ,τ) ,body)
        `(τ-lam
           ,(type->agda-type τ Δ)
@@ -311,7 +315,7 @@
           (lambda (v : A)
             (lambda (ls : (List A))
               (if (null? ls)
-                  (lcons v nil)
+                  (lcons v ls)
                   (case (first ls)
                     ls
                     ((h : A) => (if ((cmpleq v) h)
@@ -325,25 +329,27 @@
           (lambda (ls : (List A))
             (if (null? ls)
                 ls
-                ((((insert-into-sorted @ A) cmpleq) (first ls)) (((isort @ A) cmpleq) (rest ls))))))))
+                (case (first ls)
+                  ls
+                  ((h : A) =>
+                   ((((insert-into-sorted @ A) cmpleq) h) (((isort @ A) cmpleq) (rest ls))))))))))
 
-(define isort
-  (lambda (cmpleq)
-    (lambda (ls)
-      (if (null? ls)
-          ls
-          (((insert-into-sorted cmpleq) (first ls)) ((isort cmpleq) (rest ls)))))))
+(define geq-example
+  `(fix (Nat ⇒ (Nat ⇒ Bool))
+        leq
+        (lambda (a : Nat)
+          (lambda (b : Nat)
+            (if (zero? b)
+                #t
+                (if (zero? a)
+                    #f
+                    ((geq (sub1 a)) (sub1 b))))))))
 
-(define insert-into-sorted
-  (lambda (cmpleq)
-    (lambda (v)
-      (lambda (ls)
-        (if (null? ls)
-            (list v)
-            (if (cmpleq v (first ls))
-                (cons v ls)
-                (cons (first ls) (((insert-into-sorted cmpleq) v) (rest ls)))))))))
-        
+(define let-example
+  `(let ((x : Nat) 5)
+     x))
+              
+
 
 (printf "---------------------------------------\n")
 (printf "-------------   LENGTH ----------------\n")
@@ -366,10 +372,11 @@
 (pretty-print (interp-ty leq-example '() '()))
 
 (printf "---------------------------------------\n")
+(printf "-------------   IIS -------------------\n")
+(pretty-print (interp insert-into-sorted-example '() '()))
+(pretty-print (interp-ty insert-into-sorted-example '() '()))
+
+(printf "---------------------------------------\n")
 (printf "-------------   ISort -------------------\n")
 (pretty-print (interp isort-example '() '()))
 (pretty-print (interp-ty isort-example '() '()))
-
-;; Convenience: run these in the REPL
-;; (interp append-example '() '())
-;; (interp-ty append-example '() '() '())

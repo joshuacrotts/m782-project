@@ -3,96 +3,6 @@ module examples.insertion-sort where
 open import examples.prelude
 open import examples.nat-leq
 
-insert-into-sortedℕ : Term
-insert-into-sortedℕ = 
-    (Fix 
-      (Nat ⇒ List Nat ⇒ List Nat)
-      (Lam -- n
-        (Lam -- ls
-          (If (Nil? (Var 0))
-              (LCons (Var 1) (Var 0))
-              (Case (First (Var 0))
-                    (Var 1)
-                    (If (App (App leqℕ (Var 2)) (Var 0))
-                        (LCons (Var 2) (Var 1))
-                        (LCons (Var 0)
-                               (App 
-                                 (App 
-                                   (Var 3) 
-                                   (Var 2))
-                                 (Rest (Var 1))))))))))
-
-insert-into-sortedℕτ : • ⨟ ∘ ⊢ insert-into-sortedℕ ⦂ Nat ⇒ List Nat ⇒ List Nat
-insert-into-sortedℕτ = 
-    τ-fix 
-      (ty-arr ty-nat (ty-arr (ty-list ty-nat) (ty-list ty-nat))) 
-      (τ-lam 
-        ty-nat 
-        (τ-lam 
-          (ty-list ty-nat) 
-          (τ-if 
-            (τ-nil? (τ-var (ty-list ty-nat) refl)) 
-            (τ-lcons 
-              (τ-var ty-nat refl) 
-              (τ-var (ty-list ty-nat) refl)) 
-            (τ-case 
-              (τ-first (τ-var (ty-list ty-nat) refl)) 
-              (τ-var (ty-list ty-nat) refl) 
-              (τ-if 
-                (τ-app 
-                  (τ-app 
-                    (weaken-closed leqℕτ)
-                    (τ-var ty-nat refl)) 
-                  (τ-var 
-                    ty-nat 
-                    refl)) 
-                (τ-lcons 
-                  (τ-var ty-nat refl) 
-                  (τ-var (ty-list ty-nat) refl)) 
-                (τ-lcons 
-                  (τ-var ty-nat refl) 
-                  (τ-app 
-                    (τ-app 
-                      (τ-var 
-                        (ty-arr ty-nat (ty-arr (ty-list ty-nat) (ty-list ty-nat))) 
-                        refl) 
-                      (τ-var ty-nat refl))
-                    (τ-rest (τ-var (ty-list ty-nat) refl)))))))))
-
-isortℕ : Term
-isortℕ = 
-    Fix 
-      (List Nat ⇒ List Nat)
-      (Lam -- ls
-        (If (Nil? (Var 0))
-            (Var 0)
-            (Case (First (Var 0))
-              (Var 1)
-              (App
-                (App insert-into-sortedℕ (Var 0))
-                (App (Var 2) (Rest (Var 1)))))))
-              
-
-isortℕτ : • ⨟ ∘ ⊢ isortℕ ⦂ List Nat ⇒ List Nat
-isortℕτ = 
-    τ-fix 
-      (ty-arr (ty-list ty-nat) (ty-list ty-nat)) 
-      (τ-lam 
-        (ty-list ty-nat) 
-        (τ-if 
-          (τ-nil? (τ-var (ty-list ty-nat) refl)) 
-          (τ-var (ty-list ty-nat) refl) 
-          (τ-case 
-            (τ-first (τ-var (ty-list ty-nat) refl)) 
-            (τ-var (ty-list ty-nat) refl) 
-            (τ-app 
-              (τ-app 
-                (weaken-closed insert-into-sortedℕτ) 
-                (τ-var ty-nat refl)) 
-              (τ-app 
-                (τ-var (ty-arr (ty-list ty-nat) (ty-list ty-nat)) refl) 
-                (τ-rest (τ-var (ty-list ty-nat) refl)))))))
-
 listOf10ℕ : Term
 listOf10ℕ = 
   (LCons (natLit 17)
@@ -121,13 +31,188 @@ listOf10ℕτ =
                     (τ-lcons (natLitTy 55) 
                       (τ-nil ty-nat))))))))))
 
+
+-- evalListOfNat isort10ℕτ 1000000
+
+
+insert-into-sorted : Term
+insert-into-sorted =
+  (Fix
+  (∀' (((TVar 0) ⇒ ((TVar 0) ⇒ Bool))
+     ⇒
+     ((TVar 0) ⇒ ((List (TVar 0)) ⇒ (List (TVar 0))))))
+  (LamT
+   (Lam
+    (Lam
+     (Lam
+      (If
+       (Nil? (Var 0))
+       (LCons (Var 1) (Var 0))
+       (Case
+        (First (Var 0))
+        (Var 1)
+        (If
+         (App (App (Var 3) (Var 2)) (Var 0))
+         (LCons (Var 2) (Var 1))
+         (LCons
+          (Var 0)
+          (App
+           (App (App (AppT (Var 4) (TVar 0)) (Var 3)) (Var 2))
+           (Rest (Var 1))))))))))))
+
+insert-into-sortedτ : • ⨟ ∘ ⊢ insert-into-sorted ⦂ ∀' (((TVar 0) ⇒ ((TVar 0) ⇒ Bool)) ⇒ ((TVar 0) ⇒ ((List (TVar 0)) ⇒ (List (TVar 0)))))
+insert-into-sortedτ = 
+  (τ-fix
+  (ty-all
+   (ty-arr
+    (ty-arr (ty-var {n = 0} refl) (ty-arr (ty-var {n = 0} refl) ty-bool))
+    (ty-arr
+     (ty-var {n = 0} refl)
+     (ty-arr
+      (ty-list (ty-var {n = 0} refl))
+      (ty-list (ty-var {n = 0} refl))))))
+  (τ-lamT
+   (τ-lam
+    (ty-arr (ty-var {n = 0} refl) (ty-arr (ty-var {n = 0} refl) ty-bool))
+    (τ-lam
+     (ty-var {n = 0} refl)
+     (τ-lam
+      (ty-list (ty-var {n = 0} refl))
+      (τ-if
+       (τ-nil? (τ-var {n = 0} (ty-list (ty-var {n = 0} refl)) refl))
+       (τ-lcons
+        (τ-var {n = 1} (ty-var {n = 0} refl) refl)
+        (τ-var {n = 0} (ty-list (ty-var {n = 0} refl)) refl))
+       (τ-case
+        (τ-first (τ-var {n = 0} (ty-list (ty-var {n = 0} refl)) refl))
+        (τ-var {n = 1} (ty-list (ty-var {n = 0} refl)) refl)
+        (τ-if
+         (τ-app
+          (τ-app
+           (τ-var
+            {n = 3}
+            (ty-arr
+             (ty-var {n = 0} refl)
+             (ty-arr (ty-var {n = 0} refl) ty-bool))
+            refl)
+           (τ-var {n = 2} (ty-var {n = 0} refl) refl))
+          (τ-var {n = 0} (ty-var {n = 0} refl) refl))
+         (τ-lcons
+          (τ-var {n = 2} (ty-var {n = 0} refl) refl)
+          (τ-var {n = 1} (ty-list (ty-var {n = 0} refl)) refl))
+         (τ-lcons
+          (τ-var {n = 0} (ty-var {n = 0} refl) refl)
+          (τ-app
+           (τ-app
+            (τ-app
+             (τ-appT
+              (ty-var {n = 0} refl)
+              (τ-var
+               {n = 4}
+               (ty-all
+                (ty-arr
+                 (ty-arr
+                  (ty-var {n = 0} refl)
+                  (ty-arr (ty-var {n = 0} refl) ty-bool))
+                 (ty-arr
+                  (ty-var {n = 0} refl)
+                  (ty-arr
+                   (ty-list (ty-var {n = 0} refl))
+                   (ty-list (ty-var {n = 0} refl))))))
+               refl))
+             (τ-var
+              {n = 3}
+              (ty-arr
+               (ty-var {n = 0} refl)
+               (ty-arr (ty-var {n = 0} refl) ty-bool))
+              refl))
+            (τ-var {n = 2} (ty-var {n = 0} refl) refl))
+           (τ-rest
+            (τ-var {n = 1} (ty-list (ty-var {n = 0} refl)) refl))))))))))))
+
+isort : Term
+isort  =
+  (Fix
+  (∀' (((TVar 0) ⇒ ((TVar 0) ⇒ Bool)) ⇒ ((List (TVar 0)) ⇒ (List (TVar 0)))))
+  (LamT
+   (Lam
+    (Lam
+     (If
+      (Nil? (Var 0))
+      (Var 0)
+      (Case
+       (First (Var 0))
+       (Var 1)
+       (App
+        (App (App (AppT insert-into-sorted (TVar 0)) (Var 2)) (Var 0))
+        (App (App (AppT (Var 3) (TVar 0)) (Var 2)) (Rest (Var 1))))))))))
+
+isortτ : • ⨟ ∘ ⊢ isort ⦂ ∀' (((TVar 0) ⇒ ((TVar 0) ⇒ Bool)) ⇒ ((List (TVar 0)) ⇒ (List (TVar 0))))
+isortτ = 
+  (τ-fix
+  (ty-all
+   (ty-arr
+    (ty-arr (ty-var {n = 0} refl) (ty-arr (ty-var {n = 0} refl) ty-bool))
+    (ty-arr (ty-list (ty-var {n = 0} refl)) (ty-list (ty-var {n = 0} refl)))))
+  (τ-lamT
+   (τ-lam
+    (ty-arr (ty-var {n = 0} refl) (ty-arr (ty-var {n = 0} refl) ty-bool))
+    (τ-lam
+     (ty-list (ty-var {n = 0} refl))
+     (τ-if
+      (τ-nil? (τ-var {n = 0} (ty-list (ty-var {n = 0} refl)) refl))
+      (τ-var {n = 0} (ty-list (ty-var {n = 0} refl)) refl)
+      (τ-case
+       (τ-first (τ-var {n = 0} (ty-list (ty-var {n = 0} refl)) refl))
+       (τ-var {n = 1} (ty-list (ty-var {n = 0} refl)) refl)
+       (τ-app
+        (τ-app
+         (τ-app
+          (τ-appT (ty-var {n = 0} refl) (weaken-closed insert-into-sortedτ))
+          (τ-var
+           {n = 2}
+           (ty-arr
+            (ty-var {n = 0} refl)
+            (ty-arr (ty-var {n = 0} refl) ty-bool))
+           refl))
+         (τ-var {n = 0} (ty-var {n = 0} refl) refl))
+        (τ-app
+         (τ-app
+          (τ-appT
+           (ty-var {n = 0} refl)
+           (τ-var
+            {n = 3}
+            (ty-all
+             (ty-arr
+              (ty-arr
+               (ty-var {n = 0} refl)
+               (ty-arr (ty-var {n = 0} refl) ty-bool))
+              (ty-arr
+               (ty-list (ty-var {n = 0} refl))
+               (ty-list (ty-var {n = 0} refl)))))
+            refl))
+          (τ-var
+           {n = 2}
+           (ty-arr
+            (ty-var {n = 0} refl)
+            (ty-arr (ty-var {n = 0} refl) ty-bool))
+           refl))
+         (τ-rest (τ-var {n = 1} (ty-list (ty-var {n = 0} refl)) refl))))))))))
+
+
 isort10ℕ : Term
-isort10ℕ = App isortℕ listOf10ℕ
+isort10ℕ =
+  (App
+    (App
+      (AppT isort Nat)
+      leqℕ)
+    listOf10ℕ)
 
 isort10ℕτ : • ⨟ ∘ ⊢ isort10ℕ ⦂ List Nat
 isort10ℕτ =
-  τ-app
-    isortℕτ
-    listOf10ℕτ
+    (τ-app
+      (τ-app 
+        (τ-appT ty-nat isortτ) 
+        leqℕτ)
+      listOf10ℕτ)
 
--- evalListOfNat isort10ℕτ 1000000
