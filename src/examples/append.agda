@@ -1,6 +1,6 @@
 module examples.append where
 
-open import prelude 
+open import examples.prelude 
 open import examples.add
 open import examples.mul
 open import examples.length using (length; lengthτ; listOf3; listOf3τ; listOf4Bools; listOf4Boolsτ)

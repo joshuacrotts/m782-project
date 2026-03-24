@@ -1,16 +1,7 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+module theorems.preservation where
 
-module preservation where
-
-open import Relation.Binary.PropositionalEquality using (subst)
-
-open import SystemF.types
-open import SystemF.terms
-open import SystemF.values
-open import SystemF.context
-open import SystemF.typing
-open import SystemF.semantics
-open import lemma
+open import SystemF.definitions
+open import theorems.lemmas.summary
 
 -- Preservation theorem
 -- If ∘ ⊢ e ⦂ τ and e ↦ e' then ∘ ⊢ e' ⦂ τ

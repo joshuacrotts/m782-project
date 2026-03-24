@@ -7,18 +7,10 @@ open import Data.Bool using (true; false) renaming (Bool to 𝔹)
 open import Data.Product using (Σ; Σ-syntax; _,_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
-open import SystemF.terms
-open import SystemF.types 
-open import SystemF.typing
-open import SystemF.values
-open import SystemF.semantics
-open import SystemF.typing
-open import progress
-open import preservation
-open import lemma using (weaken-closed)
-
-import SystemF.context as C
-open C using (TypeContext; •; TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
+open import SystemF.definitions hiding (_∷_)
+open import theorems.progress
+open import theorems.preservation 
+open import theorems.lemmas.summary 
 
 import Data.List as AgdaList
 open AgdaList using ([]; _∷_)

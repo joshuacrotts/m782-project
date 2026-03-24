@@ -1,20 +1,11 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
-module progress where
+module theorems.progress where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Data.Product using (Σ; Σ-syntax; _,_)
 open import Data.Empty using (⊥; ⊥-elim)
 
-open import SystemF.types
-open import SystemF.terms
-open import SystemF.values
-open import SystemF.typing
-open import SystemF.semantics
-
-import SystemF.context as C
-open C using (TypeContext; •; TermContext; ∘; lookup) -- Don't bring _,_ into scope to avoid name clashes
+open import SystemF.definitions
 
 -- Progress theorem
 -- If • ⨟ ∘ ⊢ e ⦂ τ then either e Val or e steps to e'.

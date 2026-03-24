@@ -5,19 +5,6 @@ open import examples.add
 open import examples.mul
 open import examples.length using (length; lengthτ; listOf3; listOf3τ; listOf4Bools; listOf4Boolsτ)
 
-{-
-(define filter
-  (lambda (p)
-    (lambda (ls)
-      (if (nil? ls)
-            nil
-            (case (first ls)
-             (nil)
-             (if (p h)
-                 (cons h (filter p (rest ls)))
-                 (filter p (rest ls))))))))
--}
-
 
 filter : Term
 filter =
